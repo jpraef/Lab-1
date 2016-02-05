@@ -1,0 +1,119 @@
+---
+title: "Tree Analysis"
+author: "Joseph Crockett"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: pdf_document
+---
+```{r global_options, include = F}
+library(knitr)
+opts_chunk$set(tidy=T, tidy.opts=list(width.cutoff=60))
+```
+### Homework Assignment 1
+
+#### Objective Statement
+Technological advances in LiDAR systems have both increased the accuracy and reduced cost in recent years, however, both system cost and labor required to process data is prohibitive at the biome-scale.  Using LiDAR measurements of Sierra Nevada conifers, our objective is to determine, if any, the relationship between crown spread and tree height.  A positive correlaton would help to create a model that utilizes less costly remote sensing systems (i.e. Landsat/ NAIP)
+
+#### Methods
+### Data
+
+```{r}
+
+tree_data <- read.csv("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/Trees.csv", header = T)  #load LiDAR tree measurements into local environment data frame 
+
+dim(tree_data) #Checking formatting of frame.
+str(tree_data)
+anyDuplicated(tree_data[,2:5]) # Check for duplicated entries
+#The formatting seems appropriate, but I will rename column names to avoid conflicts.
+colnames(tree_data) <- c("OBJECTID", "xval", "yval", "zval", "rval")
+
+save(tree_data, file = "~/Desktop/tree_data.rda")
+```
+
+```{r}
+
+ncol(tree_data)  #running data diagnostics
+nrow(tree_data)
+head(tree_data)
+tail(tree_data)
+summary(tree_data) # shows mean, max, min, median, IQR, range, etc. 
+```
+
+```{r}
+library(ggplot2)#plotting histograms using ggplot2, with a function to plot multiple graphs
+library(gtable)
+library(grid)
+library(gridExtra)
+library(ggExtra)
+
+p1 <- ggplot(tree_data , aes(x = zval)) + geom_histogram() + theme(axis.text.x =  element_blank()) + ggtitle("Tree Heights (m)")
+
+p2 <- ggplot(tree_data , aes(x = rval)) + geom_histogram() + theme(axis.title.y = element_blank()) + ggtitle("Crown Radii (m)")
+
+grid.arrange(p1, p2, nrow = 1, ncol= 2)
+```
+Histograms of tree height and crown radii
+The data do not appear to meet the assumptions of normality; tree height and crown radii are skewed right.
+
+By log transforming heigth and radii we can better meet normality assumptions.
+
+```{r}
+
+p3 <- ggplot(tree_data , aes(x = zval)) + geom_histogram(bins = 20) + scale_x_log10() + labs(title = "Tree Heights)", x = "log10 z(m)", size = .5)
+
+p4 <- ggplot(tree_data , aes(x = rval)) + geom_histogram(bins = 20) + scale_x_log10()+ theme(axis.title.y = element_blank()) +labs(title = "Crown Radii", x = "log10 r(m)", size = .5)
+
+grid.arrange(p3, p4, ncol= 2)
+#Log transformation gives us normal distribution for tree heights and crown radii.
+```
+
+
+Pearson Correlations
+```{r}
+
+p5 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = glm)+ labs( title = "Tree Height vs. Crown Radii", x = "Tree Height (m)", y = "Crown Radii (m)")
+
+p6 <- ggMarginal(p5, type = "boxplot")
+
+p7 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = glm) + scale_x_log10() + labs( title = "Transformed Tree Height vs. Crown Radii", x = "Tree Height log10(m)", y = "Crown Radii log10(m)")
+
+p8 <- ggMarginal(p7, type = "boxplot")
+
+grid.arrange(p6, p8, ncol = 2, nrow = 1)
+
+
+```
+```{r}
+#Test for correlation between Tree Height and Crown Radii
+#An assumption of Pearson's correlation is that variables must be approximately normally distributed, so log transformation will ensure that this assumption is held.
+
+cor.test(x = log10(tree_data[,4]), y = log10(tree_data[,5]), na.action = na.omit)
+
+#Without assuming normality, we can use Spearman's rho test to test correlation between non-parametric variables
+
+cor.test(x = tree_data[,4], y = tree_data[,5], na.action = na.omit, method = "spearman")
+```
+
+Both Spearman's rho and Pearson's product moment correlation show statistical significance (p-value < 2.2e-16 and < 2.2e-16, respectively). We reject the null hypothesis of no correlation between tree height and crown radii.  R- values are .623 and .598 respectively.
+
+```{r}
+
+EDA <- function(x){
+  #x is a list of values
+  min_tmp <- min(x, na.rm = T)
+  max_tmp <- max(x, na.rm = T)
+  mdn_tmp <- median(x, na.rm = T)
+  mn_tmp <- mean(x, na.rm = T)
+  rnge_tmp <- range(x, na.rm = T)
+  sd_tmp <- sd(x, na.rm = T)
+  cv_tmp <- (sd_tmp/mn_tmp) *100
+  print(paste("Minimum =", min_tmp, sep = " "))
+  print(paste("Maximum =", max_tmp, sep = " "))
+  print(paste("Median =", mdn_tmp, sep = " "))
+  print(paste("Mean =", mn_tmp, sep = " "))
+  print(rnge_tmp)
+  print(paste("Standard Deviation =", sd_tmp, sep = " "))
+  print(paste("Coefficient of Variance =", cv_tmp, sep = " "))   
+  
+}
+      
+  
