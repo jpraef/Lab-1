@@ -10,10 +10,16 @@ opts_chunk$set(tidy=T, tidy.opts=list(width.cutoff=60))
 ### Homework Assignment 1
 
 #### Objective Statement
-Technological advances in LiDAR systems have both increased the accuracy and reduced cost in recent years, however, both system cost and labor required to process data is prohibitive at the biome-scale.  Using LiDAR measurements of Sierra Nevada conifers, our objective is to determine, if any, the relationship between crown spread and tree height.  A positive correlaton would help to create a model that utilizes less costly remote sensing systems (i.e. Landsat/ NAIP)
+Technological advances in LiDAR systems have both increased the accuracy and reduced cost in recent years, however, both system cost and labor required to process data is prohibitive at the biome-scale.  Using LiDAR measurements of Sierra Nevada conifers, our objective is to determine, if any, the relationship between crown spread and tree height.  A positive correlaton would inform a model that utilizes less costly remote sensing systems (i.e. Landsat/ NAIP) to estimate tree height from aerial images.  From such a model, standing carbon can be estimated from conifer biomass (volumes).
 
 #### Methods
+
+
 ### Data
+
+The data are LiDAR measurements of crown height (m) and radii (m) of 176101 conifers in the Sierra Nevada Mountain Range, CA, from a dataset handled by Professor Joshua Viers, UC Merced. Exact location for observations is given as x-y values with no apparent connection to lat-long coordinates.
+
+### Code
 
 ```{r}
 
@@ -50,10 +56,6 @@ p2 <- ggplot(tree_data , aes(x = rval)) + geom_histogram() + theme(axis.title.y 
 
 grid.arrange(p1, p2, nrow = 1, ncol= 2)
 ```
-Histograms of tree height and crown radii
-The data do not appear to meet the assumptions of normality; tree height and crown radii are skewed right.
-
-By log transforming heigth and radii we can better meet normality assumptions.
 
 ```{r}
 
@@ -92,7 +94,6 @@ cor.test(x = log10(tree_data[,4]), y = log10(tree_data[,5]), na.action = na.omit
 cor.test(x = tree_data[,4], y = tree_data[,5], na.action = na.omit, method = "spearman")
 ```
 
-Both Spearman's rho and Pearson's product moment correlation show statistical significance (p-value < 2.2e-16 and < 2.2e-16, respectively). We reject the null hypothesis of no correlation between tree height and crown radii.  R- values are .623 and .598 respectively.
 
 ```{r}
 
@@ -115,4 +116,12 @@ EDA <- function(x){
   
 }
       
-  
+```
+
+###Results
+
+Distributions of tree height and crown radii are skewed right, thus we log transformed the data to better meet the assumptions of normality. Subsequent  Spearman's rho and Pearson's product moment correlation tess indicated that correlation between height and radii exist with r-values of .623 and .598 respectively (p-value < 2.2e-16 and < 2.2e-16).
+
+###Discussion
+
+###Limitations
