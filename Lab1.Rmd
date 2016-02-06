@@ -1,8 +1,7 @@
 ---
 title: "Tree Analysis"
 author: "Joseph Crockett"
-date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: pdf_document
+output: word_document
 ---
 ```{r global_options, include = F}
 library(knitr)
