@@ -1,7 +1,8 @@
 ---
 title: "Tree Analysis"
 author: "Joseph Crockett"
-output: word_document
+date: "February 5, 2016"
+output: html_document
 ---
 ```{r global_options, include = F}
 library(knitr)
@@ -29,9 +30,14 @@ dim(tree_data) #Checking formatting of frame.
 str(tree_data)
 anyDuplicated(tree_data[,2:5]) # Check for duplicated entries
 #The formatting seems appropriate, but I will rename column names to avoid conflicts.
-colnames(tree_data) <- c("OBJECTID", "xval", "yval", "zval", "rval")
+colnames(tree_data) <- c("OBJECTID", "xval", "yval", "height", "radii")
 
 save(tree_data, file = "~/Desktop/tree_data.rda")
+```
+```{r}
+library(ggplot2)
+tree_gg <- ggplot(tree_data, aes(x = xval, y = yval)) + labs(title = "Position of Sierra Nevada Conifers, LiDAR Scan", x = NULL, y = NULL) + theme_bw()
+tree_gg + geom_point(size = .01, color = "forest green", alpha = 9/10, position = "jitter")
 ```
 
 ```{r}
@@ -119,8 +125,7 @@ EDA <- function(x){
 ```
 
 ###Results
-
-Distributions of tree height and crown radii are skewed right, thus we log transformed the data to better meet the assumptions of normality. Subsequent  Spearman's rho and Pearson's product moment correlation tess indicated that correlation between height and radii exist with r-values of .623 and .598 respectively (p-value < 2.2e-16 and < 2.2e-16).
+Plotting conifer positions reveals non-uniform distribution of trees, with high density in the center of the study area and along the southern border, close to what appears to be a path or riverbed. Distributions of tree height and crown radii are skewed right, and so we log transformed the data to better meet the assumptions of normality. Subsequent  Spearman's rho and Pearson's product moment correlation tests indicated that correlation of height vs. radii exists with r-values of .623 and .598 respectively (p-value < 2.2e-16 and < 2.2e-16).
 
 ###Discussion
 
