@@ -153,6 +153,7 @@ grid.arrange(p9, p10, p11, p12, ncol= 2)
 
 #Comparison of observation locations, with color indicating height and dot size indicating crown radii
 tree_gg <- ggplot(tree_data, aes(x = xval, y = yval)) + labs(title = "Position of Sierra Nevada Conifers, LiDAR Scan", x = NULL, y = NULL) + theme_bw() + geom_point(aes(size = rval, color = zval), alpha = 9/10, position = "jitter")
+                                                                
 tree_gg_s <- ggplot(tree_data_limit, aes(x = xval, y = yval)) + labs(title = "Position of Sierra Nevada Conifers, LiDAR Scan, Subset", x = NULL, y = NULL) + theme_bw()  + geom_point(aes(size = rval, color = zval), alpha = 9/10, position = "jitter")
 
 grid.arrange(tree_gg, tree_gg_s, ncol= 2)
@@ -215,12 +216,12 @@ outlierTest(tree_car2)
 
 Step 10: Commit to Git
 
-
-
-
 ###Results
-Plotting conifer positions reveals non-uniform distribution of trees, with high density in the center of the study area and along the southern border, close to what appears to be a path or riverbed. Distributions of tree height and crown radii are skewed right, and so we log transformed the data to better meet the assumptions of normality. Subsequent  Spearman's rho and Pearson's product moment correlation tests indicated that correlation of height vs. radii exists with r-values of .623 and .598 respectively (p-value < 2.2e-16 and < 2.2e-16).
+Plotting conifer positions reveals non-uniform distribution of trees, with high density in the center of the study area and along the southern border, close to what appears to be a path or riverbed. Distributions of tree height and crown radii are skewed right, and so we log transformed the data to better meet the assumptions of normality. Subsequent  Spearman's rho and Pearson's product moment correlation tests indicated that correlation of height vs. radii exists with r-values of .623 and .598 respectively (p-value < 2.2e-16 and < 2.2e-16).  Tests of residuals and homoscedasticity indicate that without transformation, neither a linear model describing crown radii as a function of tree height nor a model describing tree height as a function will adequately model the relationship (suggested power transformations are .54 and .18 respectively)
 
 ###Discussion
+Our results indicate that modeling eith tree height as a function of crown radii or crown radii as a function of tree height would not completely describe the relationship.  Ideally, we would test a nonlinear model or include more variables to build a multiple regression model.  
+
 
 ###Limitations
+The data used is a dense sample of conifers in the Sierras; however, it only describes a km ^2^ area.  If our purpose is to model the relationship between Sierra Nevada conifers height and crown radii, observations from a larger spatial area would capture variations in terrain that may affect that relationship.
