@@ -2,7 +2,7 @@
 title: "Tree Analysis"
 author: "Joseph Crockett"
 date: "February 5, 2016"
-output: html_document
+output: word_document
 ---
 ```{r global_options, include = F}
 library(knitr)
@@ -30,7 +30,7 @@ dim(tree_data) #Checking formatting of frame.
 str(tree_data)
 anyDuplicated(tree_data[,2:5]) # Check for duplicated entries
 #The formatting seems appropriate, but I will rename column names to avoid conflicts.
-colnames(tree_data) <- c("OBJECTID", "xval", "yval", "height", "radii")
+colnames(tree_data) <- c("OBJECTID", "xval", "yval", "zval", "rval")
 
 save(tree_data, file = "~/Desktop/tree_data.rda")
 ```
@@ -51,9 +51,9 @@ library(grid)
 library(gridExtra)
 library(ggExtra)
 
-p1 <- ggplot(tree_data , aes(x = zval)) + geom_histogram() + theme(axis.text.x =  element_blank()) + ggtitle("Tree Heights (m)")
+p1 <- ggplot(tree_data , aes(x = zval)) + geom_histogram() + theme(axis.text.x =  element_blank()) + labs(title = "Tree Heights (m)",size = .5)
 
-p2 <- ggplot(tree_data , aes(x = rval)) + geom_histogram() + theme(axis.title.y = element_blank()) + ggtitle("Crown Radii (m)")
+p2 <- ggplot(tree_data , aes(x = rval)) + geom_histogram() + theme(axis.title.y = element_blank()) + labs(title = "Crown Radii (m)",size = .5)
 
 #Histograms of log transformed variables
 p3 <- ggplot(tree_data , aes(x = zval)) + geom_histogram(bins = 20) + scale_x_log10() + labs(title = "Tree Heights)", x = "log10 z(m)", size = .5)
@@ -69,11 +69,11 @@ Pearson Correlations
 ```{r}
 # Step 3: Examine Correlation Between Variables
 # Is the relationship linear? Comparisons of both Pearson and Spearman's rho can reveal linear vs monotonic relationships.
-p5 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = glm)+ labs( title = "Tree Height vs. Crown Radii", x = "Tree Height (m)", y = "Crown Radii (m)")
+p5 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = glm)+ labs( title = "Tree Height vs. Crown Radii", x = "Tree Height (m)", y = "Crown Radii (m)",size = .5)
 
 p6 <- ggMarginal(p5, type = "boxplot")
 
-p7 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = glm) + scale_x_log10() + labs( title = "Transformed Tree Height vs. Crown Radii", x = "Tree Height log10(m)", y = "Crown Radii log10(m)")
+p7 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = glm) + scale_x_log10() + labs( title = "Transformed Tree Height vs. Crown Radii", x = "Tree Height log10(m)", y = "Crown Radii log10(m)",size = .5)
 
 p8 <- ggMarginal(p7, type = "boxplot")
 
@@ -135,9 +135,9 @@ head(tree_data_limit)
 tail(tree_data_limit)
 summary(tree_data_limit)
 
-p9 <- ggplot(tree_data_limit , aes(x = zval)) + geom_histogram() + theme(axis.text.x =  element_blank()) + ggtitle("Tree Heights (m)")
+p9 <- ggplot(tree_data_limit , aes(x = zval)) + geom_histogram() + theme(axis.text.x =  element_blank()) + labs(title = "Tree Heights (m)",size = .5)
 
-p10 <- ggplot(tree_data_limit , aes(x = rval)) + geom_histogram() + theme(axis.title.y = element_blank()) + ggtitle("Crown Radii (m)")
+p10 <- ggplot(tree_data_limit , aes(x = rval)) + geom_histogram() + theme(axis.title.y = element_blank()) + labs(title = "Crown Radii (m)",size = .5)
 
 #Histograms of log transformed variables
 p11 <- ggplot(tree_data_limit , aes(x = zval)) + geom_histogram(bins = 20) + scale_x_log10() + labs(title = "Tree Heights)", x = "log10 z(m)", size = .5)
@@ -152,11 +152,10 @@ grid.arrange(p9, p10, p11, p12, ncol= 2)
 #Step 6: Spatial Plotting
 
 #Comparison of observation locations, with color indicating height and dot size indicating crown radii
-tree_gg <- ggplot(tree_data, aes(x = xval, y = yval)) + labs(title = "Position of Sierra Nevada Conifers, LiDAR Scan", x = NULL, y = NULL) + theme_bw() + geom_point(aes(size = rval, color = zval), alpha = 9/10, position = "jitter")
+ ggplot(tree_data, aes(x = xval, y = yval)) + labs(title = "Position of Sierra Nevada Conifers, LiDAR Scan", x = NULL, y = NULL,size = .5) + theme_bw() + geom_point(aes(size = rval, color = zval), alpha = 9/10, position = "jitter")
                                                                 
-tree_gg_s <- ggplot(tree_data_limit, aes(x = xval, y = yval)) + labs(title = "Position of Sierra Nevada Conifers, LiDAR Scan, Subset", x = NULL, y = NULL) + theme_bw()  + geom_point(aes(size = rval, color = zval), alpha = 9/10, position = "jitter")
+ ggplot(tree_data_limit, aes(x = xval, y = yval)) + labs(title = "Position of Sierra Nevada Conifers, LiDAR Scan, Subset", x = NULL, y = NULL,size = .5) + theme_bw()  + geom_point(aes(size = rval, color = zval), alpha = 9/10, position = "jitter")
 
-grid.arrange(tree_gg, tree_gg_s, ncol= 2)
 ```
 
 ```{r}
@@ -170,9 +169,9 @@ describe(tree_data_limit)
 #Step 8: Regression Modeling
 
 
-p13 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = lm)+ labs( title = "Tree Height vs. Crown Radii", x = "Tree Height (m)", y = "Crown Radii (m)")
+p13 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = lm)+ labs( title = "Tree Height vs. Crown Radii", x = "Tree Height (m)", y = "Crown Radii (m)",size = .5)
 
-p14 <- ggplot(data = tree_data, aes(x = rval, y = zval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = lm)+ labs( title = "Crown Radii vs. Tree Height", x = "Crown Radii (m)", y = "Tree Height (m)")
+p14 <- ggplot(data = tree_data, aes(x = rval, y = zval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = lm)+ labs( title = "Crown Radii vs. Tree Height", x = "Crown Radii (m)", y = "Tree Height (m)",size = .5)
 
 
 p15 <- ggplot(data = tree_data) + annotate("text",x = 708000, y = 4334000, label = "RVAL", size = 12) + theme_bw() + theme(axis.title = element_blank(), axis.ticks = element_blank(), axis.text.y = element_blank(), axis.text.x = element_blank()) 
