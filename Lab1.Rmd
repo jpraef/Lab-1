@@ -18,12 +18,12 @@ Technological advances in LiDAR systems have both increased the accuracy and red
 
 ### Data
 
-The data are LiDAR measurements of crown height (m) and radii (m) of 176101 conifers in the Sierra Nevada Mountain Range, CA, from a dataset handled by Professor Joshua Viers, UC Merced. Exact location for observations is given as x-y values with no apparent connection to lat-long coordinates.
+The data are LiDAR measurements of crown height (m) and radii (m) of 176101 conifers in the Sierra Nevada Mountain Range, CA, from a dataset handled by Professor Joshua Viers, UC Merced. Exact location for observations is given as x-y coordinates (m) as per the Universal Coordinate System
 
 ### Code
 
 ```{r}
-
+#Step 1: Import data
 tree_data <- read.csv("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/Trees.csv", header = T)  #load LiDAR tree measurements into local environment data frame 
 
 dim(tree_data) #Checking formatting of frame.
@@ -34,22 +34,17 @@ colnames(tree_data) <- c("OBJECTID", "xval", "yval", "height", "radii")
 
 save(tree_data, file = "~/Desktop/tree_data.rda")
 ```
-```{r}
-library(ggplot2)
-tree_gg <- ggplot(tree_data, aes(x = xval, y = yval)) + labs(title = "Position of Sierra Nevada Conifers, LiDAR Scan", x = NULL, y = NULL) + theme_bw()
-tree_gg + geom_point(size = .01, color = "forest green", alpha = 9/10, position = "jitter")
-```
+
 
 ```{r}
 
+#Step 2: Run Data Diognastics
 ncol(tree_data)  #running data diagnostics
 nrow(tree_data)
 head(tree_data)
 tail(tree_data)
 summary(tree_data) # shows mean, max, min, median, IQR, range, etc. 
-```
 
-```{r}
 library(ggplot2)#plotting histograms using ggplot2, with a function to plot multiple graphs
 library(gtable)
 library(grid)
@@ -60,23 +55,20 @@ p1 <- ggplot(tree_data , aes(x = zval)) + geom_histogram() + theme(axis.text.x =
 
 p2 <- ggplot(tree_data , aes(x = rval)) + geom_histogram() + theme(axis.title.y = element_blank()) + ggtitle("Crown Radii (m)")
 
-grid.arrange(p1, p2, nrow = 1, ncol= 2)
-```
-
-```{r}
-
+#Histograms of log transformed variables
 p3 <- ggplot(tree_data , aes(x = zval)) + geom_histogram(bins = 20) + scale_x_log10() + labs(title = "Tree Heights)", x = "log10 z(m)", size = .5)
 
 p4 <- ggplot(tree_data , aes(x = rval)) + geom_histogram(bins = 20) + scale_x_log10()+ theme(axis.title.y = element_blank()) +labs(title = "Crown Radii", x = "log10 r(m)", size = .5)
 
-grid.arrange(p3, p4, ncol= 2)
+grid.arrange(p1, p2, p3, p4, ncol= 2)
 #Log transformation gives us normal distribution for tree heights and crown radii.
 ```
 
 
 Pearson Correlations
 ```{r}
-
+# Step 3: Examine Correlation Between Variables
+# Is the relationship linear? Comparisons of both Pearson and Spearman's rho can reveal linear vs monotonic relationships.
 p5 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = glm)+ labs( title = "Tree Height vs. Crown Radii", x = "Tree Height (m)", y = "Crown Radii (m)")
 
 p6 <- ggMarginal(p5, type = "boxplot")
@@ -87,21 +79,22 @@ p8 <- ggMarginal(p7, type = "boxplot")
 
 grid.arrange(p6, p8, ncol = 2, nrow = 1)
 
-
-```
-```{r}
 #Test for correlation between Tree Height and Crown Radii
 #An assumption of Pearson's correlation is that variables must be approximately normally distributed, so log transformation will ensure that this assumption is held.
 
 cor.test(x = log10(tree_data[,4]), y = log10(tree_data[,5]), na.action = na.omit)
 
+cor.test(x = tree_data[,4], y = tree_data[,5], na.action = na.omit)
 #Without assuming normality, we can use Spearman's rho test to test correlation between non-parametric variables
 
 cor.test(x = tree_data[,4], y = tree_data[,5], na.action = na.omit, method = "spearman")
+
+#S < P, thus we can assume linearity.
 ```
 
 
 ```{r}
+#Step 4: creating a function
 
 EDA <- function(x){
   #x is a list of values
@@ -123,6 +116,107 @@ EDA <- function(x){
 }
       
 ```
+
+Lab 1.5
+
+```{r} 
+#Step 5: Subsets
+tree_data_limit <- subset(tree_data, xval > 708000 )
+tree_data_limit <- subset(tree_data_limit, xval < 708200 )
+tree_data_limit <- subset(tree_data_limit, yval > 4334000 )
+tree_data_limit <- subset(tree_data_limit, yval < 4334200 )
+ #subsetting 708000 < x < 708200 and 4334000 < y < 4334200
+
+#By taking this subset, we are examining in greater detail the center of the study area, where we earlier noted a greater concentration of observations.
+
+ncol(tree_data_limit)  #running data diagnostics
+nrow(tree_data_limit)
+head(tree_data_limit)
+tail(tree_data_limit)
+summary(tree_data_limit)
+
+p9 <- ggplot(tree_data_limit , aes(x = zval)) + geom_histogram() + theme(axis.text.x =  element_blank()) + ggtitle("Tree Heights (m)")
+
+p10 <- ggplot(tree_data_limit , aes(x = rval)) + geom_histogram() + theme(axis.title.y = element_blank()) + ggtitle("Crown Radii (m)")
+
+#Histograms of log transformed variables
+p11 <- ggplot(tree_data_limit , aes(x = zval)) + geom_histogram(bins = 20) + scale_x_log10() + labs(title = "Tree Heights)", x = "log10 z(m)", size = .5)
+
+p12 <- ggplot(tree_data_limit , aes(x = rval)) + geom_histogram(bins = 20) + scale_x_log10()+ theme(axis.title.y = element_blank()) +labs(title = "Crown Radii", x = "log10 r(m)", size = .5)
+
+grid.arrange(p9, p10, p11, p12, ncol= 2)
+
+```
+
+```{r}
+#Step 6: Spatial Plotting
+
+#Comparison of observation locations, with color indicating height and dot size indicating crown radii
+tree_gg <- ggplot(tree_data, aes(x = xval, y = yval)) + labs(title = "Position of Sierra Nevada Conifers, LiDAR Scan", x = NULL, y = NULL) + theme_bw() + geom_point(aes(size = rval, color = zval), alpha = 9/10, position = "jitter")
+tree_gg_s <- ggplot(tree_data_limit, aes(x = xval, y = yval)) + labs(title = "Position of Sierra Nevada Conifers, LiDAR Scan, Subset", x = NULL, y = NULL) + theme_bw()  + geom_point(aes(size = rval, color = zval), alpha = 9/10, position = "jitter")
+
+grid.arrange(tree_gg, tree_gg_s, ncol= 2)
+```
+
+```{r}
+#Step 7: Descriptive Statistics
+library(psych)
+describe(tree_data_limit)
+#The subset has smaller values of mean, median, sd compared to the full dataset.  Standard error has increased.  The minimum conifer height is the same in the subset, but maximum height and minimum and maximum crown radii have contracted.
+#The describe function gives the similiar statistics as the summary function (min, max, etc.), and includes skew, kurtosis, standard deviation, standard error, trimmed mean (dropped top and bottom percentage), and absolute deviation from the median.  Describe does not include the quartiles as summary does.
+```
+```{r}
+#Step 8: Regression Modeling
+
+
+p13 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = lm)+ labs( title = "Tree Height vs. Crown Radii", x = "Tree Height (m)", y = "Crown Radii (m)")
+
+p14 <- ggplot(data = tree_data, aes(x = rval, y = zval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = lm)+ labs( title = "Crown Radii vs. Tree Height", x = "Crown Radii (m)", y = "Tree Height (m)")
+
+
+p15 <- ggplot(data = tree_data) + annotate("text",x = 708000, y = 4334000, label = "RVAL", size = 12) + theme_bw() + theme(axis.title = element_blank(), axis.ticks = element_blank(), axis.text.y = element_blank(), axis.text.x = element_blank()) 
+
+p16 <- ggplot(data = tree_data) + annotate("text",x = 708000, y = 4334000, label = "ZVAL", size = 12) + theme_bw() + theme(axis.title = element_blank(), axis.ticks = element_blank(), axis.text.y = element_blank(), axis.text.x = element_blank()) 
+
+grid.arrange(p13, p15, p16, p14, ncol = 2, nrow = 2)
+
+
+library(car)
+
+tree_car1 <-lm(zval ~ rval, tree_data_limit)
+tree_car2 <-lm(rval ~ zval, tree_data_limit)
+
+#Residuals are the difference between the observed values and the predicted values, i.e between the linear model we predicted and the observation at that x value.  
+
+#Height as a function of crown radii: This seems an unlikely relationship, though useful if our purpose is to model biomass using radii
+summary(tree_car1)
+residualPlot(tree_car1)
+ncvTest(tree_car1)
+spreadLevelPlot(tree_car1)
+#The residual plot indicates a slightly non random distribution of the residuals.  Without transformation of the variables, a linear model may not be applicable.
+
+#Radii as a function of tree height: a more likely causal relationship.
+summary(tree_car2)
+residualPlot(tree_car2)
+ncvTest(tree_car2)
+spreadLevelPlot(tree_car2)
+
+#Homoscedasticity is the assumption that the dependant variable (i.e tree height) influences with similar variance the independent variable across the range of values. As we can see, our subsetted data (comparable to the full dataset), do not exhibit full homoscedascity, and the spread level plot suggests a power transformation to rectify this.
+
+```
+```{r}
+#Step 9: Outliers
+
+#Detecting outliers in both linear models
+outlierTest(tree_car1)
+outlierTest(tree_car2)
+#These outliers are points that may a significant influence on the model despite their abnormal distance from other observations.  The outliers in the data could be explained by equipment error; strong resource competetion in an area resulting in tall trees with narrow crowns; little resource competition resulting in wide crowns and relatively short trunks; differences in tree species; or conifers that suffered some sort of disturbance that reduced crown radii or height
+```
+
+Step 10: Commit to Git
+
+
+
 
 ###Results
 Plotting conifer positions reveals non-uniform distribution of trees, with high density in the center of the study area and along the southern border, close to what appears to be a path or riverbed. Distributions of tree height and crown radii are skewed right, and so we log transformed the data to better meet the assumptions of normality. Subsequent  Spearman's rho and Pearson's product moment correlation tests indicated that correlation of height vs. radii exists with r-values of .623 and .598 respectively (p-value < 2.2e-16 and < 2.2e-16).
