@@ -51,14 +51,14 @@ library(grid)
 library(gridExtra)
 library(ggExtra)
 
-p1 <- ggplot(tree_data , aes(x = zval)) + geom_histogram() + theme(axis.text.x =  element_blank()) + labs(title = "Tree Heights (m)",size = .5)
+p1 <- ggplot(tree_data , aes(x = zval)) + geom_histogram() + theme(axis.text.x =  element_blank()) + labs(title = "Tree Heights (m)",size = .1)
 
-p2 <- ggplot(tree_data , aes(x = rval)) + geom_histogram() + theme(axis.title.y = element_blank()) + labs(title = "Crown Radii (m)",size = .5)
+p2 <- ggplot(tree_data , aes(x = rval)) + geom_histogram() + theme(axis.title.y = element_blank()) + labs(title = "Crown Radii (m)",size = .1)
 
 #Histograms of log transformed variables
-p3 <- ggplot(tree_data , aes(x = zval)) + geom_histogram(bins = 20) + scale_x_log10() + labs(title = "Tree Heights)", x = "log10 z(m)", size = .5)
+p3 <- ggplot(tree_data , aes(x = zval)) + geom_histogram(bins = 20) + scale_x_log10() + labs(title = "Tree Heights)", x = "log10 z(m)", size = .1)
 
-p4 <- ggplot(tree_data , aes(x = rval)) + geom_histogram(bins = 20) + scale_x_log10()+ theme(axis.title.y = element_blank()) +labs(title = "Crown Radii", x = "log10 r(m)", size = .5)
+p4 <- ggplot(tree_data , aes(x = rval)) + geom_histogram(bins = 20) + scale_x_log10()+ theme(axis.title.y = element_blank()) +labs(title = "Crown Radii", x = "log10 r(m)", size = .1)
 
 grid.arrange(p1, p2, p3, p4, ncol= 2)
 #Log transformation gives us normal distribution for tree heights and crown radii.
@@ -69,11 +69,11 @@ Pearson Correlations
 ```{r}
 # Step 3: Examine Correlation Between Variables
 # Is the relationship linear? Comparisons of both Pearson and Spearman's rho can reveal linear vs monotonic relationships.
-p5 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = glm)+ labs( title = "Tree Height vs. Crown Radii", x = "Tree Height (m)", y = "Crown Radii (m)",size = .5)
+p5 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = glm)+ labs( title = "Tree Height vs. Crown Radii", x = "Tree Height (m)", y = "Crown Radii (m)",size = .1)
 
 p6 <- ggMarginal(p5, type = "boxplot")
 
-p7 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = glm) + scale_x_log10() + labs( title = "Transformed Tree Height vs. Crown Radii", x = "Tree Height log10(m)", y = "Crown Radii log10(m)",size = .5)
+p7 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = glm) + scale_x_log10() + labs( title = "Transformed Tree Height vs. Crown Radii", x = "Tree Height log10(m)", y = "Crown Radii log10(m)",size = .1)
 
 p8 <- ggMarginal(p7, type = "boxplot")
 
@@ -135,14 +135,14 @@ head(tree_data_limit)
 tail(tree_data_limit)
 summary(tree_data_limit)
 
-p9 <- ggplot(tree_data_limit , aes(x = zval)) + geom_histogram() + theme(axis.text.x =  element_blank()) + labs(title = "Tree Heights (m)",size = .5)
+p9 <- ggplot(tree_data_limit , aes(x = zval)) + geom_histogram() + theme(axis.text.x =  element_blank()) + labs(title = "Tree Heights (m)",size = .1)
 
-p10 <- ggplot(tree_data_limit , aes(x = rval)) + geom_histogram() + theme(axis.title.y = element_blank()) + labs(title = "Crown Radii (m)",size = .5)
+p10 <- ggplot(tree_data_limit , aes(x = rval)) + geom_histogram() + theme(axis.title.y = element_blank()) + labs(title = "Crown Radii (m)",size = .1)
 
 #Histograms of log transformed variables
-p11 <- ggplot(tree_data_limit , aes(x = zval)) + geom_histogram(bins = 20) + scale_x_log10() + labs(title = "Tree Heights)", x = "log10 z(m)", size = .5)
+p11 <- ggplot(tree_data_limit , aes(x = zval)) + geom_histogram(bins = 20) + scale_x_log10() + labs(title = "Tree Heights)", x = "log10 z(m)", size = .1)
 
-p12 <- ggplot(tree_data_limit , aes(x = rval)) + geom_histogram(bins = 20) + scale_x_log10()+ theme(axis.title.y = element_blank()) +labs(title = "Crown Radii", x = "log10 r(m)", size = .5)
+p12 <- ggplot(tree_data_limit , aes(x = rval)) + geom_histogram(bins = 20) + scale_x_log10()+ theme(axis.title.y = element_blank()) +labs(title = "Crown Radii", x = "log10 r(m)", size = .1)
 
 grid.arrange(p9, p10, p11, p12, ncol= 2)
 
@@ -152,9 +152,9 @@ grid.arrange(p9, p10, p11, p12, ncol= 2)
 #Step 6: Spatial Plotting
 
 #Comparison of observation locations, with color indicating height and dot size indicating crown radii
- ggplot(tree_data, aes(x = xval, y = yval)) + labs(title = "Position of Sierra Nevada Conifers, LiDAR Scan", x = NULL, y = NULL,size = .5) + theme_bw() + geom_point(aes(size = rval, color = zval), alpha = 9/10, position = "jitter")
+ ggplot(tree_data, aes(x = xval, y = yval)) + labs(title = "Position of Sierra Nevada Conifers, LiDAR Scan", x = NULL, y = NULL,size = .1) + theme_bw() + geom_point(aes(size = rval, color = zval), alpha = 9/10, position = "jitter")
                                                                 
- ggplot(tree_data_limit, aes(x = xval, y = yval)) + labs(title = "Position of Sierra Nevada Conifers, LiDAR Scan, Subset", x = NULL, y = NULL,size = .5) + theme_bw()  + geom_point(aes(size = rval, color = zval), alpha = 9/10, position = "jitter")
+ ggplot(tree_data_limit, aes(x = xval, y = yval)) + labs(title = "Position of Sierra Nevada Conifers, LiDAR Scan, Subset", x = NULL, y = NULL,size = .1) + theme_bw()  + geom_point(aes(size = rval, color = zval), alpha = 9/10, position = "jitter")
 
 ```
 
@@ -169,7 +169,7 @@ describe(tree_data_limit)
 #Step 8: Regression Modeling
 
 
-p13 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = lm)+ labs( title = "Tree Height vs. Crown Radii", x = "Tree Height (m)", y = "Crown Radii (m)",size = .5)
+p13 <- ggplot(data = tree_data, aes(x = zval, y = rval)) + geom_point(position = "jitter", size = .1) + geom_smooth(method = lm)+ labs( title = "Tree Height vs. Crown Radii", x = "Tree Height (m)", y = "Crown Radii (m)",size = .1)
 
 p14 <- ggplot(data = tree_data, aes(x = rval, y = zval)) + geom_point(position = "jitter", size = .5) + geom_smooth(method = lm)+ labs( title = "Crown Radii vs. Tree Height", x = "Crown Radii (m)", y = "Tree Height (m)",size = .5)
 
