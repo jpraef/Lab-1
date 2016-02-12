@@ -1,36 +1,46 @@
 ---
-title: "Version Control"
+title: "Lab2"
 author: "Joseph Crockett"
-date: "February 5, 2016"
+date: "February 11, 2016"
 output: html_document
 ---
-```{r global_options, include = F}
-library(knitr)
-opts_chunk$set(tidy=T, tidy.opts=list(width.cutoff=60))
-```
+Joseph Crockett  
+ES 207- Atmospheric Modeling  
+February 11, 2016  
 
-###Objective Statement
+Homework Assignment 2  
 
+Objective:
+Based on a subsample of the most frequently occuring tree genera in the data, we will test whether project areas are indepentdant in terms of carbon output.
 
+Methods:
+The data will first be corrected for missing or unrealistic values.  A subset of the most frequent genera will be tested for independence (Chi-square test) based upon observaton counts within genera by project site and a map of project sites generated.
+  Data:
+  Data from 4 Northern California riparian project sites between 3/20/2012 and 10/14/2013: Heritage Oak Winery, Cosumnes River Preserve, Sacramento River Red Bluff to Hwy 32, and Napa.  Observations and field measurements of woody plant heights, DBH (diameter at breast height).  Samples were identified by genus-Species.
+  Code:
+  ```{r}
+  #read data into r
+  ripdata <- read.csv("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/riparian_survey.csv")
+  
+  #summarize data, looking for false values.
+  
+  summary(ripdata)
+  #-9999 values in ripdata[,15], ripdata[,14], removing values
+  
+  ripdata[ripdata == -9999] <- NULL
+  summary(ripdata)
+  str(ripdata)
+ 
+ #changing Project Codes to simplified codes
+ tempo <- levels(ripdata[,2])
+ tempn <- factor(c("CORP", "HOWY", "NASO", "SRRB"))
+ ripdata$ProjCode <- tempn[match(ripdata[,2], tempo)]
+ 
+ 
+  
+ ``` 
+Results:
 
-###Methods
+Discussion:
 
-####Data
-Observations from dataset supplied by Professor Joshua Viers of University of California, UC Merced.  LiDAR measurements of tree height (m) and crown radii (m) of 176101 conifers in the Sierra Nevada mountain range, California.  Long- Lat coordinates are not given, though x-y coordinates are supplied.
-
-
-###Code
-
-```{r}
-library(ggplot2)
-tree_data <- read.csv("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/Trees.csv", header = T) 
-
-
-
-
-
-###Results
-
-###Discussion
-
-###Limitation
+Limitations:
