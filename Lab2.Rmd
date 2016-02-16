@@ -19,25 +19,69 @@ The data will first be corrected for missing or unrealistic values.  A subset of
   Data from 4 Northern California riparian project sites between 3/20/2012 and 10/14/2013: Heritage Oak Winery, Cosumnes River Preserve, Sacramento River Red Bluff to Hwy 32, and Napa.  Observations and field measurements of woody plant heights, DBH (diameter at breast height).  Samples were identified by genus-Species.
   Code:
   ```{r}
+  library(ggplot2)
+  library(reshape)
   #read data into r
-  ripdata <- read.csv("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/riparian_survey.csv")
+  ripdata <- read.csv("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/riparian_survey.csv", stringsAsFactors = F)
   
   #summarize data, looking for false values.
   
   summary(ripdata)
-  #-9999 values in ripdata[,15], ripdata[,14], removing values
-  
-  ripdata[ripdata == -9999] <- NULL
+ 
   summary(ripdata)
   str(ripdata)
  
  #changing Project Codes to simplified codes
- tempo <- levels(ripdata[,2])
- tempn <- factor(c("CORP", "HOWY", "NASO", "SRRB"))
+ tempo <- unique(ripdata[,2])
+ tempn <- c("CORP", "HOWY", "NASO", "SRRB")
  ripdata$ProjCode <- tempn[match(ripdata[,2], tempo)]
  
+ #removing rows with species name = "Not Recorded","Unknown", or "dead wood" or illogical values, like negative values for DBH
+ unique(ripdata[,10])
+ unique(ripdata[,11])
+ ripdata <- ripdata[!(ripdata[,14] == -9999 | ripdata[,15] == -9999 | ripdata[,14] < 0 | ripdata[,10] == "Not Recorded" | ripdata[,10] == "UNKNOWN" | ripdata[,10] == "NODE(UNKNOWN)" | ripdata[,11] == "Unknown" | ripdata[,11] == "dead wood" | ripdata[,11] == "Not Recorded" ), ]
+
+which.max(ripdata[,15])
+ripdata[3911,]
+#A height of 104 m and a dbh of 1.4 cm seems unlikely.  
+
+ripdata <- ripdata[-3911,]
+ which.max(ripdata[,15]) 
+ ripdata[3270,]
  
-  
+ which.max(ripdata[,14]) 
+ ripdata[617,]
+ #229.5 cm DBH and 19 m height seems appropriate.
+ 
+ 
+ #Summarize by project code
+ ProjLoc <- aggregate(cbind(Longitude, Latitude) ~ ProjCode, data = ripdata, mean)
+ 
+ #Step 2: Species Selection
+ 
+ #Separating the genera out of the genus - species, and finding the 5 most frequent occurances by project site.
+ #SpeciesVarietalName is separted by a space, that can be used to split the terms.
+ 
+ ripdata$Genus <- sapply(strsplit(ripdata$SpeciesVarietalName, " "),"[[", 1)
+ 
+ #freqtable based on project site ~ genera
+ genfreq <- table(ripdata[,16],ripdata[,17])
+ genfreq_m <- melt(t(genfreq))
+
+#graph by site ~ genus with totals
+ggplot(data = genfreq_m, aes(x = Var.2, y = value, fill = Var.1)) +geom_bar(stat = "identity", position = position_dodge()) + theme_bw()
+ #the 5 genus with the greatest frequency are Populus (824), Salix (789), Quercus (703), Fraxinus (467), Acer (457)
+ sss <- (aggregate(genfreq_m$value, by = list(Category = genfreq_m$Var.1), FUN = sum))
+ sss[order(-sss[,2]),]
+ #the 5 genus with the greatest frequency are Populus (824), Salix (789), Quercus (703), Fraxinus (467), Acer (457)
+ 
+ripdata_s5 <- subset(ripdata, Genus == "Populus" | Genus == "Salix" | Genus == "Quercus" | Genus == "Fraxinus" | Genus == "Acer",)
+ 
+ 
+ 
+ #Mapping Project location
+ 
+ 
  ``` 
 Results:
 
