@@ -2,7 +2,7 @@
 title: "Lab2"
 author: "Joseph Crockett"
 date: "February 11, 2016"
-output: word_document
+output: html_document
 ---
 Joseph Crockett  
 ES 207- Environmental Data Analysis  
@@ -126,4 +126,4 @@ Discussion:
 The result of the chisquared test, that frequency and site location are not independent, reflects what is seen in figure 1.  The Consume River Preserve site had the highest overall proportion of the five most frequent genera, followed by the Sacramento Red River Bluff site.  However, frequency of occurence is not enough for us to estimate differences in carbon stocks.  We could be seeing high occurances of young trees following fire. 
 
 Limitations:
-The limitations of a chi squared test are that observations must be independant, expressed in terms of frequency, and with a count ideally greater than 50.  The subset we used met all those criteria: plants could only be one genus, we transformed counts into frequency, and each subsetted genus had more than 50 observations.  However, the chi squared test is unable to tell us anything about the correlation between site area and genus frequency. Though this was not our objective, its good to keep in mind. 
+The limitations of a chi squared test are that observations must be independant, expressed in terms of frequency, and with a count ideally greater than 50.  The subset we used met all those criteria: plants could only be one genus, we transformed counts into frequency, and each subsetted genus had more than 50 observations.  However, the chi squared test is unable to tell us anything about the correlation between site area and genus frequency. Further analysis is necessary to determine the relationship, if any.
