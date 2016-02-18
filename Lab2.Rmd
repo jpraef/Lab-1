@@ -2,7 +2,7 @@
 title: "Lab2"
 author: "Joseph Crockett"
 date: "February 11, 2016"
-output: word_document
+output: html_document
 ---
 Joseph Crockett  
 ES 207- Environmental Data Analysis  
@@ -11,10 +11,11 @@ February 11, 2016
 Homework Assignment 2  
 
 Objective:
-Based on a subsample of the most frequently occuring tree genera in the data, we will test whether project areas are indepentdant in terms of carbon output.
+Measurements from four project sites in Northern California are being analyzed to estimate aboveground carbon stock.  
+Based on a subsample of the most frequently occuring tree genera in the data, we will test whether project areas are indepentdant in terms of carbon output. We hypothesize that productivity is based upon individual site characteristics rather than characteristics of specific genera.
 
 Methods:
-The data will first be corrected for missing or unrealistic values.  A subset of the most frequent genera will be tested for independence (Chi-square test) based upon observaton counts within genera by project site and a map of project sites generated.
+The data are first corrected for missing or unrealistic values.  A subset of the most frequent genera is tested for independence (Chi-square test) based upon observaton counts within genera by project site.  
   Data:
   Data from 4 Northern California riparian project sites between 3/20/2012 and 10/14/2013: Heritage Oak Winery, Cosumnes River Preserve, Sacramento River Red Bluff to Hwy 32, and Napa.  Observations and field measurements of woody plant heights, DBH (diameter at breast height).  Samples were identified by genus-Species.
   Code:
@@ -120,9 +121,10 @@ ripdata_s5 <- subset(ripdata, Genus == "Populus" | Genus == "Salix" | Genus == "
  
 ``` 
 Results:
-We removed `r4632 - 3270` rows from the original dataset due to illogical values or unknown species name, and modified 12 rows to reflect a data input error.  The five most frequently observed genera are Populus (824), Salix (789), Quercus (703), Fraxinus (467), and Acer (457).  P value > 2.2e-16  chisquared test of independence on these five genera vs site location. We reject the null hypothesis that frequency is independent of site location. 
+We removed `r 4632 - 3270` rows from the original dataset due to illogical values or unknown species name, and modified 12 rows to reflect a data input error.  The five most frequently observed genera are Populus (824), Salix (789), Quercus (703), Fraxinus (467), and Acer (457).  P value > 2.2e-16  chisquared test of independence on these five genera vs site location. We reject the null hypothesis that frequency is independent of site location. 
 
 Discussion:
-The chisquared test shows us what is visible in figure 1: The Consumne River Preserve and the Sacramento Red River Bluff sites had more frequent occurances of the 5 most frequent species than NASO and HOWY 
+The chisquared test shows us what is visible in figure 1: The Consumne River Preserve and the Sacramento Red River Bluff sites had more frequent occurances of the 5 most frequent species than the NASO and HOWY sites
 
 Limitations:
+The limitations of a chi squared test are that observations must be independant, expressed in terms of frequency, and with a count ideally greater than 50.  The subset we used met all those criteria: plants could only be one genus, we transformed counts into frequency, and each subsetted genus had more than 50 observations.  However, the chi squared test is unable to tell us anything about the correlation between site area and genus frequency. Though this was not our objective, its good to keep in mind. 
