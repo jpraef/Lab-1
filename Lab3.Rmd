@@ -1,0 +1,20 @@
+---
+title: "Lab_3"
+author: "Joseph Crockett"
+date: "February 21, 2016"
+output: html_document
+---
+
+Joseph Crockett
+February 21, 2016
+ES 207: Environmental Data Analysis
+
+Homework 3: Pre-regression
+
+Objective Statement:  
+Methods:  
+Data:  
+Code:  
+Results:  
+Discussion:  
+Limitations:  
