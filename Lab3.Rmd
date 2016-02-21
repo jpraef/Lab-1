@@ -61,7 +61,7 @@ incpt <- 0.0
 ripdata_s_lm <- lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm, ripdata_s)
 
 #Plot line & observations, sep by genus
-g2 <- g + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm))
+p6 <- g + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm))
 
 ```
 
