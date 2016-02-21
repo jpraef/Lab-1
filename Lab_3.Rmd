@@ -1,0 +1,23 @@
+---
+title: "Lab_3"
+author: "Joseph Crockett"
+date: "February 21, 2016"
+output: html_document
+---
+Joseph Crockett
+February 21st, 2016
+ES 207: Environmental Data Analysis
+
+Homework 3
+
+Objective Statement:  
+Aboveground carbon stocks, as a function of biomass, cannot be directly measured without destroying the sample.  An alternative is to estimate volume using measurments of tree height and diameter at breast height (DBH). Our objective is to 1) develop a linear model relating height to DBH and 2) determine whether project site or genus affects the model.  
+
+Methods:  
+Data:  
+Measurements of five most frequent tree genera at four project sites in Northern California.  
+
+Code:  
+Results:  
+Discussion:  
+Limitations:  
