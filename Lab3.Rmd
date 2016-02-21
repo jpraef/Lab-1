@@ -11,7 +11,7 @@ knitr::opts_chunk$set(fig.width = 12, fig.height = 8, warning = FALSE, message =
 ndpkg <- function(p){
   ifelse(is.element(p,installed.packages()[,1]),require(p,character.only = T), install.packages(p, dep = T))
 }
-sapply(c("ggplot2", "reshape", "gridExtra"), ndpkg)
+sapply(c("ggplot2", "reshape", "gridExtra", "car"), ndpkg)
 
 #load subset data into the global environment as characters
 ripdata_s <- read.csv("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/riparian_survey_subset.csv", row.names=1, stringsAsFactors=FALSE)
@@ -41,7 +41,6 @@ unique(ripdata_s[,"Genus"])
 unique(ripdata_s[,"ProjCode"])
 
 #plotting height by project site and genus
-dev.new()
 g <- ggplot(data = ripdata_s) 
 
 #Histograms and densities of ht and DBH
@@ -64,7 +63,16 @@ ripdata_s_lm <- lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm, ripdata_s)
 p6 <- g + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm))
 
 ```
+```{r Step 3}
+#Find outliers
+rip_ol <- outlierTest(ripdata_s_lm)
+rip_ol_id <- as.numeric(names(rip_ol$rstudent))
 
+p7 <- g + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm)) + geom_point(data = ripdata_s[rip_ol_id,],aes(x = Woody_DBH_cm, y = Woody_Height_cm), color = "black", shape = 17)
+
+ripdata_ss <- ripdata_s[rip_ol_id,]
+
+  
 
 
 Results:  
