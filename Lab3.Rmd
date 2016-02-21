@@ -1,0 +1,25 @@
+---
+title: "Lab_3"
+author: "Joseph Crockett"
+date: "February 21, 2016"
+output: html_document
+---
+
+Joseph Crockett
+February 21, 2016
+ES 207: Environmental Data Analysis
+
+Homework 3: Pre-regression
+
+Objective Statement:  
+Aboveground carbon stocks, as a function of biomass, cannot be directly measured without destroying the sample.  An alternative is to estimate volume using measurments of tree height and diameter at breast height (DBH). Our objective is to 1) develop a linear model relating height to DBH and 2) determine whether project site or genus affects the model.  
+
+Methods:  
+Following preliminary data analysis, we developed a global linear model using the R function "lm(ripdata[,htcm] ~ ripdata[,dbh]) relating height to DBH.  Outliers were then found and removed in order to improve model fit. To further improve fit, we natural log transformed sample values for a second global model. Tertiary linear models for each project site and genus were also created.   
+Data:  
+Measurements of five most frequent tree genera at four project sites in Northern California.   
+
+Code:  
+Results:  
+Discussion:  
+Limitations:  
