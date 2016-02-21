@@ -53,6 +53,19 @@ p5 <-g + geom_density(aes(x = Woody_DBH_cm))
 ```
 
 ```{r Step 2}
+#Change height units to DBH units (m to cm)
+ripdata_s[,"Woody_Height_cm"] <- ripdata_s[,"Woody_Height_m"] *100
+
+#Force a zero intercept
+incpt <- 0.0
+ripdata_s_lm <- lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm, ripdata_s)
+
+#Plot line & observations, sep by genus
+g2 <- g + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm))
+
+```
+
+
 
 Results:  
 Discussion:  
