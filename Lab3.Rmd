@@ -70,9 +70,14 @@ rip_ol_id <- as.numeric(names(rip_ol$rstudent))
 
 p7 <- g + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm)) + geom_point(data = ripdata_s[rip_ol_id,],aes(x = Woody_DBH_cm, y = Woody_Height_cm), color = "black", shape = 17)
 
-ripdata_ss <- ripdata_s[rip_ol_id,]
 
-  
+ripdata_ss <- ripdata_s[!(rownames(ripdata_s) %in% rip_ol_id) ,]
+
+ripdata_ss_lm <- lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm, ripdata_ss)
+
+p8 <- ggplot(data = ripdata_ss) + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus))+ geom_abline(intercept = 0, slope = coef(ripdata_ss_lm))
+
+```
 
 
 Results:  
