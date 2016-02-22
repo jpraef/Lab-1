@@ -79,6 +79,15 @@ p8 <- ggplot(data = ripdata_ss) + geom_point(aes(x = Woody_DBH_cm, y = Woody_Hei
 
 ```
 
+```{r Step 4}
+ripdata_ss[,"WH_cm_log"] <- log(ripdata_ss[,"Woody_Height_cm"])
+ripdata_ss[,"DBH_cm_log"] <- log(ripdata_ss[,"Woody_DBH_cm"])
+
+ripdata_ss_lm_log <- lm(I(WH_cm_log - incpt) ~ 0 + DBH_cm_log, ripdata_ss)
+
+p9 <- ggplot(data = ripdata_ss) + geom_point(aes(x = DBH_cm_log, y = WH_cm_log, color = Genus))+ geom_abline(intercept = 0, slope = coef(ripdata_ss_lm_log))
+
+```
 
 Results:  
 Discussion:  
