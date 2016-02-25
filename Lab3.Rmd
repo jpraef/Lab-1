@@ -2,7 +2,7 @@
 title: "Lab_3"
 author: "Joseph Crockett"
 date: "February 21, 2016"
-output: html_document
+output: word_document
 ---
 <<<<<<< HEAD
 =======
@@ -19,6 +19,7 @@ sapply(c("ggplot2", "reshape", "gridExtra", "car", "dplyr", "plyr"), ndpkg)
 ripdata_s <- read.csv("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/riparian_survey_subset.csv", row.names=1, stringsAsFactors=FALSE)
 ```
 >>>>>>> coding
+
 
 Joseph Crockett
 February 21, 2016
@@ -55,7 +56,7 @@ unique(ripdata_s[,"ProjCode"])
 g <- ggplot(data = ripdata_s) 
 
 #Histograms and densities of ht and DBH
-p1 <- g + geom_boxplot(aes(x = ProjCode, y = Woody_Height_m, fill = Genus))
+p1 <- g + geom_boxplot(aes(x = ProjCode, y = Woody_Height_m, fill = Genus)) +ggtitle("Distribution of values, Genus by ProjCode")
 p2 <- g + geom_histogram(aes(x = Woody_Height_m))
 p3 <- g + geom_density(aes(x = Woody_Height_m))
 
@@ -73,7 +74,7 @@ incpt <- 0.0
 ripdata_s_lm <- lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm, ripdata_s)
 summary(ripdata_s_lm)
 #Plot line & observations, sep by genus
-p6 <- g2 + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm))
+p6 <- g2 + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm)) + ggtitle("Base Model, WH vs DBH")
 
 ```
 ```{r Step 3}
@@ -81,14 +82,14 @@ p6 <- g2 + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus))
 rip_ol <- outlierTest(ripdata_s_lm)
 rip_ol_id <- as.numeric(names(rip_ol$rstudent))
 
-p7 <- g2 + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm)) + geom_point(data = ripdata_s[rip_ol_id,],aes(x = Woody_DBH_cm, y = Woody_Height_cm), color = "black", shape = 17)
+p7 <- g2 + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm)) + geom_point(data = ripdata_s[rip_ol_id,],aes(x = Woody_DBH_cm, y = Woody_Height_cm), color = "black", shape = 17) +ggtitle("WH vs DBH, outliers identified")
 
 
 ripdata_ss <- ripdata_s[!(rownames(ripdata_s) %in% rip_ol_id) ,]
 
 ripdata_ss_lm <- lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm, ripdata_ss)
 
-p8 <- ggplot(data = ripdata_ss) + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus))+ geom_abline(intercept = 0, slope = coef(ripdata_ss_lm))
+p8 <- ggplot(data = ripdata_ss) + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus))+ geom_abline(intercept = 0, slope = coef(ripdata_ss_lm)) + ggtitle("WH vs. DBH, outliers removed")
 
 ```
 
@@ -107,7 +108,7 @@ ripdata_s_lm_log <- lm(I(WH_cm_log - incpt) ~ 0 + DBH_cm_log, ripdata_s)
 
 summary(ripdata_s_lm_log)
 
-p13 <- g3 + geom_point(aes(x = DBH_cm_log, y = WH_cm_log, color = Genus)) + stat_smooth(formula = I(y - incpt) ~ (0 + x), method = "lm", se = FALSE)
+p13 <- g3 + geom_point(aes(x = DBH_cm_log, y = WH_cm_log, color = Genus)) + stat_smooth(formula = I(y - incpt) ~ (0 + x), method = "lm", se = FALSE) + ggtitle("Log10 Transformed WH and DBH")
 
 #Making labels for the graph
 lm_prj_gen <- function(xx){
@@ -116,49 +117,71 @@ lm_prj_gen <- function(xx){
  data.frame(r2 = r2, stringsAsFactors = F)
 }
 
-lm_labs <- ddply(ripdata_s, .(Genus,ProjCode), lm_prj_gen)
+lm_labs <- ddply(ripdata_ss, .(Genus,ProjCode), lm_prj_gen)
 
 #graphing genus vs projcode, with lm line and r2 labeled
-p14 <- ggplot(data = ripdata_s, aes(x = Woody_DBH_cm, y = Woody_Height_cm)) + geom_point() + stat_smooth(formula = I(y - incpt) ~ (0 + x), method = "lm", se = FALSE)  + facet_grid(ProjCode ~ Genus) + geom_text(data = lm_labs, aes(x = 50, y = 7000, label = paste("r2 = ", round(r2, digits = 2), sep = " ")))
+p14 <- ggplot(data = ripdata_ss, aes(x = Woody_DBH_cm, y = Woody_Height_cm)) + geom_point() + stat_smooth(formula = I(y - incpt) ~ (0 + x), method = "lm", se = FALSE)  + facet_grid(ProjCode ~ Genus) + geom_text(data = lm_labs, aes(x = 50, y = 7000, label = paste("r2 = ", round(r2, digits = 2), sep = " "))) + ggtitle("Competing Linear models, Genus by Project Site")
  
 ```
 ```{r Step 5}
-p15 <- ggplot(data = ripdata_s, aes(x = Woody_DBH_cm, y = Woody_Height_cm)) + geom_point(aes(shape = Genus, color = ProjCode)) + stat_smooth(formula = I(y - incpt) ~ (0 + x), method = "lm", se = FALSE) + coord_trans(x = "log10", y = "log10") + geom_text(aes( x = 10, y = 4000, label = paste0("f(x)=", round(coef(lm(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm))), digits = 4),"x,R2 =",round(summary(lm(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm), data = ripdata_s))$r.squared, digits = 4))))
+p15 <- ggplot(data = ripdata_ss, aes(x = Woody_DBH_cm, y = Woody_Height_cm)) + geom_point(aes(shape = Genus, color = ProjCode)) + stat_smooth(formula = I(y - incpt) ~ (0 + x), method = "lm", se = FALSE) + coord_trans(x = "log10", y = "log10") + geom_text(aes( x = 10, y = 4000, label = paste0("f(x)=", round(coef(lm(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm))), digits = 4),"x,R2 =",round(summary(lm(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm), data = ripdata_s))$r.squared, digits = 4)))) + ggtitle("Global fit model, WH vs DBH")
  
 ```
 
 Results: 
-Step 1 ~ 
-`r p1`
+Step 1  
+```{r} 
+p1
+```
 Of the most frequently occuring genera, Populus exhibits both the greatest range of heights and the greatest mean heights in CORP, NASO and SRRB.  Genera in CORP  have the most outliers and in general the closes means between genera.  
-`r grid.arrange(p1,p2, ncol = 2, nrow =1)`
+```{r}
+grid.arrange(p2,p3, ncol = 2, nrow =1, top = "Distribution of Woody Height values")
+```
 The heights and diameters are not normally distributed and may require transformation.
-`r grid.arrange(p3,p4, ncol = 2, nrow = 1)`
-
+```{r}
+grid.arrange(p4,p5, ncol = 2, nrow = 1, top = "Distribution of Diameter at Breast Height Values")
+```
 Linear Model
-`r p6`
+```{r}
+p6
+```
 A basic linear model of the relationship between tree height and diameter at breast height explaines approximately 72% of the variation, with a p-value less than 2e-16.  This fits the given data, but normalized data may increase the percent variation explained.  
 
 Outliers
-`r p7`
-We identified 10 points as outliers: `r rip_ol_id`.  Their removal results in a 4% increase in R^2^.  
+```{r}
+p7
+```
+We identified 10 points as outliers.  Their removal results in a 4% increase in R^2^.  
 
-`r p8`
+```{r}
+p8
+```
 
 Competing models
 
-`r grid.arrange(g9,g10,g11,g12, ncol=2,nrow=2)`
-
-`r p13`
-
-`r p14` 
+```{r}
+grid.arrange(p9,p10,p11,p12, ncol=2,nrow=2, top = "Log10 transformed values of WH and DBH")
+```
+The log tranformed values have approximately normal distributions.
+```{r}
+p13
+```
+When outliers are removed and values transformed, our explained variance is approximately 94%.  We can begin to separate out what combinations of variables is influencing this with the following table:
+```{r}
+p14
+``` 
+It appears that a model based only on the  Acer genus in the SRRB site would be close to our total explained variance; however, I prefer one of the models that shows a greater spread of values, such as Quercus x CORP.
 
 Master Plot
 
-`r p15`
-
+```{r} 
+p15
+```
+The master plot includes the best fit model, with log transformed values, separated by genus and project code.
  
 Discussion:  
+There appears to be a fairly strong relationship between DBH and height based upon our subset of most frequent genera.  In previous data cleansing, we notice data errors that were summarily removed before analysis. It was not noticed then, but can be seen now that there is some amount of bias at the HOWY, NASO and SRRB sites for samples greater than ~ 10cm DBH.  This is unfortunate, because though our model explains a high amount of variation in the relationship, we cannot be certain that our model accurately portrays the population.
+
 Limitations:  
 Our linear models obscure the relationships between DBH and WH at low values of each.  A better fitting model would utilize an exponential function to describe the relationship.   
 
