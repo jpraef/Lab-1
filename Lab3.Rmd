@@ -94,6 +94,7 @@ p12 <- g3 + geom_density(aes(x = DBH_cm_log))
 
 ripdata_s_lm_log <- lm(I(WH_cm_log - incpt) ~ 0 + DBH_cm_log, ripdata_s)
 
+summary(ripdata_s_lm_log)
 
 p13 <- g3 + geom_point(aes(x = DBH_cm_log, y = WH_cm_log, color = Genus)) + stat_smooth(formula = I(y - incpt) ~ (0 + x), method = "lm", se = FALSE)
 
@@ -113,22 +114,6 @@ p14 <- ggplot(data = ripdata_s, aes(x = Woody_DBH_cm, y = Woody_Height_cm)) + ge
 ```{r Step 5}
 p15 <- ggplot(data = ripdata_s, aes(x = Woody_DBH_cm, y = Woody_Height_cm)) + geom_point(aes(shape = Genus, color = ProjCode)) + stat_smooth(formula = I(y - incpt) ~ (0 + x), method = "lm", se = FALSE) + coord_trans(x = "log10", y = "log10") + geom_text(aes( x = 10, y = 4000, label = paste0("f(x)=", round(coef(lm(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm))), digits = 4),"x,R2 =",round(summary(lm(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm), data = ripdata_s))$r.squared, digits = 4))))
  
- 
-p1
-p2
-p3
-p4
-p5
-p6
-p7
-p8
-p9
-p10
-p11
-p12
-p13
-p14
-p15
 ```
 
 Results: 
@@ -149,7 +134,20 @@ We identified 10 points as outliers: `r rip_ol_id`.  Their removal results in a 
 
 `r p8`
 
+Competing models
+
+`r grid.arrange(g9,g10,g11,g12, ncol=2,nrow=2)`
+
+`r p13`
+
+`r p14`
+
+Master Plot
+
+`r p15`
+
 
 Discussion:  
 Limitations:  
+Our linear models obscure the relationships between DBH and WH at low values of each.  A better fitting model would utilize an exponential function to describe the relationship.   
 
