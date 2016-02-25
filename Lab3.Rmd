@@ -97,39 +97,40 @@ ripdata_s_lm_log <- lm(I(WH_cm_log - incpt) ~ 0 + DBH_cm_log, ripdata_s)
 
 p13 <- g3 + geom_point(aes(x = DBH_cm_log, y = WH_cm_log, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_ss_lm_log)) + scale_x_continuous(limits = c(0, 5)) + scale_y_continuous(limits = c(0, 10)) 
 
-acr_corp_lm 
+
 lm_prj <- function(xx){
-  lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm,  filter(ripdata_s, ProjCode == xx)
+  lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm,  filter(ripdata_s, ProjCode == xx))
 }
+
 lm_gen <- function(yy){
   lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm,  filter(ripdata_s, Genus == yy))
 }
 
+HOWY_lm <- lm_prj("HOWY")
+SRRB_lm <- lm_prj("SRRB")
+CORP_lm <- lm_prj("CORP")
+NASO_lm <- lm_prj("NASO")
+Acer_lm <- lm_gen("Acer")
+Quercus_lm <- lm_gen("Quercus")
+Salix_lm <- lm_gen("Salix")
+Populus_lm <- lm_gen("Populus")
+Fraxinus_lm <- lm_gen("Fraxinus")
+
+summary(HOWY_lm)$r.squared
+summary(SRRB_lm)$r.squared
+summary(CORP_lm)$r.squared
+summary(NASO_lm)$r.squared
+summary(Acer_lm)$r.squared
+summary(Quercus_lm)$r.squared
+summary(Salix_lm)$r.squared
+summary(Populus_lm)$r.squared
+summary(Fraxinus_lm)$r.squared
 
 
-
-
-summary(annaa("HOWY","Acer"))$r.squared
-summary(annaa("HOWY","Populus"))$r.squared
-summary(annaa("HOWY","Fraxinus"))$r.squared
-summary(annaa("HOWY","Quercus"))$r.squared
-summary(annaa("HOWY","Salix"))$r.squared
-summary(annaa("CORP","Acer"))$r.squared
-summary(annaa("CORP","Populus"))$r.squared
-summary(annaa("CORP","Fraxinus"))$r.squared
-summary(annaa("CORP","Quercus"))$r.squared
-summary(annaa("CORP","Salix"))$r.squared
-summary(annaa("SRRB","Acer"))$r.squared
-summary(annaa("SRRB","Populus"))$r.squared
-summary(annaa("SRRB","Fraxinus"))$r.squared
-summary(annaa("SRRB","Quercus"))$r.squared
-summary(annaa("SRRB","Salix"))$r.squared
-summary(annaa("NASO","Acer"))$r.squared
-summary(annaa("NASO","Populus"))$r.squared
-summary(annaa("NASO","Fraxinus"))$r.squared
-summary(annaa("NASO","Quercus"))$r.squared
-summary(annaa("NASO","Salix"))$r.squared
-
+ggplot(data = ripdata_s, aes(x = Woody_DBH_cm, y = Woody_Height_cm, label = summary(lm(I(y - incpt) ~ (0 + x)))$r.squared)) + geom_point()+ stat_smooth(formula = I(y - incpt) ~ (0 + x), method = "lm", se = FALSE) + geom_text(x = 1, y = 7000) + facet_grid(ProjCode ~ Genus) 
+ 
+```
+```{r Step 5}
 
 ```
 
