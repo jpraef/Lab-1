@@ -60,7 +60,7 @@ p5 <-g2 + geom_density(aes(x = Woody_DBH_cm))
 #Force a zero intercept
 incpt <- 0.0
 ripdata_s_lm <- lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm, ripdata_s)
-
+summary(ripdata_s_lm)
 #Plot line & observations, sep by genus
 p6 <- g2 + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm))
 
@@ -131,7 +131,25 @@ p14
 p15
 ```
 
-Results:  
+Results: 
+Step 1 ~ 
+`r p1`
+Of the most frequently occuring genera, Populus exhibits both the greatest range of heights and the greatest mean heights in CORP, NASO and SRRB.  Genera in CORP  have the most outliers and in general the closes means between genera.  
+`r grid.arrange(p1,p2, ncol = 2, nrow =1)`
+The heights and diameters are not normally distributed and may require transformation.
+`r grid.arrange(p3,p4, ncol = 2, nrow = 1)`
+
+Linear Model
+`r p6`
+A basic linear model of the relationship between tree height and diameter at breast height explaines approximately 72% of the variation, with a p-value less than 2e-16.  This fits the given data, but normalized data may increase the percent variation explained.  
+
+Outliers
+`r p7`
+We identified 10 points as outliers: `r rip_ol_id`.  Their removal results in a 4% increase in R^2^.  
+
+`r p8`
+
+
 Discussion:  
 Limitations:  
 
