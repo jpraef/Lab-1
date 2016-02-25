@@ -146,7 +146,7 @@ Master Plot
 
 `r p15`
 
-
+ 
 Discussion:  
 Limitations:  
 Our linear models obscure the relationships between DBH and WH at low values of each.  A better fitting model would utilize an exponential function to describe the relationship.   
