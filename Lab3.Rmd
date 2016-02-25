@@ -4,14 +4,14 @@ author: "Joseph Crockett"
 date: "February 21, 2016"
 output: html_document
 ---
-```{r global_options include = FALSE}
+```{r global_options, include = FALSE}
 knitr::opts_chunk$set(fig.width = 12, fig.height = 8, warning = FALSE, message = FALSE)
 
 #check for needed packages, install if needed, require if not
 ndpkg <- function(p){
   ifelse(is.element(p,installed.packages()[,1]),require(p,character.only = T), install.packages(p, dep = T))
 }
-sapply(c("ggplot2", "reshape", "gridExtra", "car", "dplyr"), ndpkg)
+sapply(c("ggplot2", "reshape", "gridExtra", "car", "dplyr", "plyr"), ndpkg)
 
 #load subset data into the global environment as characters
 ripdata_s <- read.csv("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/riparian_survey_subset.csv", row.names=1, stringsAsFactors=FALSE)
@@ -82,8 +82,8 @@ p8 <- ggplot(data = ripdata_ss) + geom_point(aes(x = Woody_DBH_cm, y = Woody_Hei
 ```
 
 ```{r Step 4}
-ripdata_s[,"WH_cm_log"] <- log(ripdata_s[,"Woody_Height_cm"])
-ripdata_s[,"DBH_cm_log"] <- log(ripdata_s[,"Woody_DBH_cm"])
+ripdata_s[,"WH_cm_log"] <- log10(ripdata_s[,"Woody_Height_cm"])
+ripdata_s[,"DBH_cm_log"] <- log10(ripdata_s[,"Woody_DBH_cm"])
 
 
 g3 <- ggplot(data = ripdata_s)
@@ -95,7 +95,7 @@ p12 <- g3 + geom_density(aes(x = DBH_cm_log))
 ripdata_s_lm_log <- lm(I(WH_cm_log - incpt) ~ 0 + DBH_cm_log, ripdata_s)
 
 
-p13 <- g3 + geom_point(aes(x = DBH_cm_log, y = WH_cm_log, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_ss_lm_log)) + scale_x_continuous(limits = c(0, 5)) + scale_y_continuous(limits = c(0, 10)) 
+p13 <- g3 + geom_point(aes(x = DBH_cm_log, y = WH_cm_log, color = Genus)) + stat_smooth(formula = I(y - incpt) ~ (0 + x), method = "lm", se = FALSE)
 
 #Making labels for the graph
 lm_prj_gen <- function(xx){
@@ -111,7 +111,24 @@ p14 <- ggplot(data = ripdata_s, aes(x = Woody_DBH_cm, y = Woody_Height_cm)) + ge
  
 ```
 ```{r Step 5}
-
+p15 <- ggplot(data = ripdata_s, aes(x = Woody_DBH_cm, y = Woody_Height_cm)) + geom_point(aes(shape = Genus, color = ProjCode)) + stat_smooth(formula = I(y - incpt) ~ (0 + x), method = "lm", se = FALSE) + coord_trans(x = "log10", y = "log10") + geom_text(aes( x = 10, y = 4000, label = paste0("f(x)=", round(coef(lm(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm))), digits = 4),"x,R2 =",round(summary(lm(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm), data = ripdata_s))$r.squared, digits = 4))))
+ 
+ 
+p1
+p2
+p3
+p4
+p5
+p6
+p7
+p8
+p9
+p10
+p11
+p12
+p13
+p14
+p15
 ```
 
 Results:  
