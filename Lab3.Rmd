@@ -97,37 +97,17 @@ ripdata_s_lm_log <- lm(I(WH_cm_log - incpt) ~ 0 + DBH_cm_log, ripdata_s)
 
 p13 <- g3 + geom_point(aes(x = DBH_cm_log, y = WH_cm_log, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_ss_lm_log)) + scale_x_continuous(limits = c(0, 5)) + scale_y_continuous(limits = c(0, 10)) 
 
-
-lm_prj <- function(xx){
-  lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm,  filter(ripdata_s, ProjCode == xx))
+#Making labels for the graph
+lm_prj_gen <- function(xx){
+  lmod <- lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm,  data = xx)
+ r2 <- summary(lmod)$r.squared 
+ data.frame(r2 = r2, stringsAsFactors = F)
 }
 
-lm_gen <- function(yy){
-  lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm,  filter(ripdata_s, Genus == yy))
-}
+lm_labs <- ddply(ripdata_s, .(Genus,ProjCode), lm_prj_gen)
 
-HOWY_lm <- lm_prj("HOWY")
-SRRB_lm <- lm_prj("SRRB")
-CORP_lm <- lm_prj("CORP")
-NASO_lm <- lm_prj("NASO")
-Acer_lm <- lm_gen("Acer")
-Quercus_lm <- lm_gen("Quercus")
-Salix_lm <- lm_gen("Salix")
-Populus_lm <- lm_gen("Populus")
-Fraxinus_lm <- lm_gen("Fraxinus")
-
-summary(HOWY_lm)$r.squared
-summary(SRRB_lm)$r.squared
-summary(CORP_lm)$r.squared
-summary(NASO_lm)$r.squared
-summary(Acer_lm)$r.squared
-summary(Quercus_lm)$r.squared
-summary(Salix_lm)$r.squared
-summary(Populus_lm)$r.squared
-summary(Fraxinus_lm)$r.squared
-
-
-ggplot(data = ripdata_s, aes(x = Woody_DBH_cm, y = Woody_Height_cm, label = summary(lm(I(y - incpt) ~ (0 + x)))$r.squared)) + geom_point()+ stat_smooth(formula = I(y - incpt) ~ (0 + x), method = "lm", se = FALSE) + geom_text(x = 1, y = 7000) + facet_grid(ProjCode ~ Genus) 
+#graphing genus vs projcode, with lm line and r2 labeled
+p14 <- ggplot(data = ripdata_s, aes(x = Woody_DBH_cm, y = Woody_Height_cm)) + geom_point() + stat_smooth(formula = I(y - incpt) ~ (0 + x), method = "lm", se = FALSE)  + facet_grid(ProjCode ~ Genus) + geom_text(data = lm_labs, aes(x = 50, y = 7000, label = paste("r2 = ", round(r2, digits = 2), sep = " ")))
  
 ```
 ```{r Step 5}
