@@ -4,8 +4,7 @@ author: "Joseph Crockett"
 date: "February 21, 2016"
 output: word_document
 ---
-<<<<<<< HEAD
-=======
+
 ```{r global_options, include = FALSE}
 knitr::opts_chunk$set(fig.width = 12, fig.height = 8, warning = FALSE, message = FALSE)
 
@@ -18,7 +17,6 @@ sapply(c("ggplot2", "reshape", "gridExtra", "car", "dplyr", "plyr"), ndpkg)
 #load subset data into the global environment as characters
 ripdata_s <- read.csv("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/riparian_survey_subset.csv", row.names=1, stringsAsFactors=FALSE)
 ```
->>>>>>> coding
 
 
 Joseph Crockett
@@ -28,14 +26,14 @@ ES 207: Environmental Data Analysis
 Homework 3: Pre-regression
 
 Objective Statement:  
-<<<<<<< HEAD
+
 Methods:  
 Data:  
 Code:  
 Results:  
 Discussion:  
 Limitations:  
-=======
+
 Aboveground carbon stocks, as a function of biomass, cannot be directly measured without destroying the sample.  An alternative is to estimate volume using measurments of tree height and diameter at breast height (DBH). Our objective is to 1) develop a linear model relating height to DBH and 2) determine whether project site or genus affects the model.  
 
 Methods:  
@@ -185,4 +183,3 @@ There appears to be a fairly strong relationship between DBH and height based up
 Limitations:  
 Our linear models obscure the relationships between DBH and WH at low values of each.  A better fitting model would utilize an exponential function to describe the relationship.   
 
->>>>>>> coding
