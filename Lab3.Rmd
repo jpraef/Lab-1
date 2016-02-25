@@ -11,7 +11,7 @@ knitr::opts_chunk$set(fig.width = 12, fig.height = 8, warning = FALSE, message =
 ndpkg <- function(p){
   ifelse(is.element(p,installed.packages()[,1]),require(p,character.only = T), install.packages(p, dep = T))
 }
-sapply(c("ggplot2", "reshape", "gridExtra", "car"), ndpkg)
+sapply(c("ggplot2", "reshape", "gridExtra", "car", "dplyr"), ndpkg)
 
 #load subset data into the global environment as characters
 ripdata_s <- read.csv("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/riparian_survey_subset.csv", row.names=1, stringsAsFactors=FALSE)
@@ -47,20 +47,22 @@ g <- ggplot(data = ripdata_s)
 p1 <- g + geom_boxplot(aes(x = ProjCode, y = Woody_Height_m, fill = Genus))
 p2 <- g + geom_histogram(aes(x = Woody_Height_m))
 p3 <- g + geom_density(aes(x = Woody_Height_m))
-p4 <- g + geom_histogram(aes(x = Woody_DBH_cm))
-p5 <-g + geom_density(aes(x = Woody_DBH_cm))
+
 ```
 
 ```{r Step 2}
 #Change height units to DBH units (m to cm)
 ripdata_s[,"Woody_Height_cm"] <- ripdata_s[,"Woody_Height_m"] *100
 
+g2 <- ggplot(data = ripdata_s) 
+p4 <- g2 + geom_histogram(aes(x = Woody_DBH_cm))
+p5 <-g2 + geom_density(aes(x = Woody_DBH_cm))
 #Force a zero intercept
 incpt <- 0.0
 ripdata_s_lm <- lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm, ripdata_s)
 
 #Plot line & observations, sep by genus
-p6 <- g + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm))
+p6 <- g2 + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm))
 
 ```
 ```{r Step 3}
@@ -68,7 +70,7 @@ p6 <- g + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) 
 rip_ol <- outlierTest(ripdata_s_lm)
 rip_ol_id <- as.numeric(names(rip_ol$rstudent))
 
-p7 <- g + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm)) + geom_point(data = ripdata_s[rip_ol_id,],aes(x = Woody_DBH_cm, y = Woody_Height_cm), color = "black", shape = 17)
+p7 <- g2 + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_s_lm)) + geom_point(data = ripdata_s[rip_ol_id,],aes(x = Woody_DBH_cm, y = Woody_Height_cm), color = "black", shape = 17)
 
 
 ripdata_ss <- ripdata_s[!(rownames(ripdata_s) %in% rip_ol_id) ,]
@@ -80,15 +82,58 @@ p8 <- ggplot(data = ripdata_ss) + geom_point(aes(x = Woody_DBH_cm, y = Woody_Hei
 ```
 
 ```{r Step 4}
-ripdata_ss[,"WH_cm_log"] <- log(ripdata_ss[,"Woody_Height_cm"])
-ripdata_ss[,"DBH_cm_log"] <- log(ripdata_ss[,"Woody_DBH_cm"])
+ripdata_s[,"WH_cm_log"] <- log(ripdata_s[,"Woody_Height_cm"])
+ripdata_s[,"DBH_cm_log"] <- log(ripdata_s[,"Woody_DBH_cm"])
 
-ripdata_ss_lm_log <- lm(I(WH_cm_log - incpt) ~ 0 + DBH_cm_log, ripdata_ss)
 
-p9 <- ggplot(data = ripdata_ss) + geom_point(aes(x = DBH_cm_log, y = WH_cm_log, color = Genus))+ geom_abline(intercept = 0, slope = coef(ripdata_ss_lm_log))
+g3 <- ggplot(data = ripdata_s)
+p9 <- g3 + geom_histogram(aes(x = WH_cm_log))
+p10 <- g3 + geom_density(aes(x = WH_cm_log))
+p11 <- g3 + geom_histogram(aes(x = DBH_cm_log))
+p12 <- g3 + geom_density(aes(x = DBH_cm_log))
+
+ripdata_s_lm_log <- lm(I(WH_cm_log - incpt) ~ 0 + DBH_cm_log, ripdata_s)
+
+
+p13 <- g3 + geom_point(aes(x = DBH_cm_log, y = WH_cm_log, color = Genus)) + geom_abline(intercept = 0, slope = coef(ripdata_ss_lm_log)) + scale_x_continuous(limits = c(0, 5)) + scale_y_continuous(limits = c(0, 10)) 
+
+acr_corp_lm 
+lm_prj <- function(xx){
+  lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm,  filter(ripdata_s, ProjCode == xx)
+}
+lm_gen <- function(yy){
+  lm(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm,  filter(ripdata_s, Genus == yy))
+}
+
+
+
+
+
+summary(annaa("HOWY","Acer"))$r.squared
+summary(annaa("HOWY","Populus"))$r.squared
+summary(annaa("HOWY","Fraxinus"))$r.squared
+summary(annaa("HOWY","Quercus"))$r.squared
+summary(annaa("HOWY","Salix"))$r.squared
+summary(annaa("CORP","Acer"))$r.squared
+summary(annaa("CORP","Populus"))$r.squared
+summary(annaa("CORP","Fraxinus"))$r.squared
+summary(annaa("CORP","Quercus"))$r.squared
+summary(annaa("CORP","Salix"))$r.squared
+summary(annaa("SRRB","Acer"))$r.squared
+summary(annaa("SRRB","Populus"))$r.squared
+summary(annaa("SRRB","Fraxinus"))$r.squared
+summary(annaa("SRRB","Quercus"))$r.squared
+summary(annaa("SRRB","Salix"))$r.squared
+summary(annaa("NASO","Acer"))$r.squared
+summary(annaa("NASO","Populus"))$r.squared
+summary(annaa("NASO","Fraxinus"))$r.squared
+summary(annaa("NASO","Quercus"))$r.squared
+summary(annaa("NASO","Salix"))$r.squared
+
 
 ```
 
 Results:  
 Discussion:  
 Limitations:  
+
