@@ -10,9 +10,10 @@ March 1, 2016
 Homework Assignment 4
 
 Objective Statement:
-
+In order to reasonably estimate standing carbon, we will further refine our linear model between Diameter at Breast Height and Tree height, factored by either genus and Project site.
 
 Methods:
+
 Data:
 Code:
 
