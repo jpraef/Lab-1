@@ -2,7 +2,7 @@
 title: "Lab_3"
 author: "Joseph Crockett"
 date: "February 21, 2016"
-output: html_document
+output: word_document
 ---
 
 ```{r global_options, include = FALSE}
@@ -116,6 +116,8 @@ p14 <- ggplot(data = ripdata_ss, aes(x = Woody_DBH_cm, y = Woody_Height_cm)) + g
 ```
 ```{r Step 5}
 p15 <- ggplot(data = ripdata_ss, aes(x = Woody_DBH_cm, y = Woody_Height_cm)) + geom_point(aes(shape = Genus, color = ProjCode)) + stat_smooth(formula = y ~ x, method = "lm", se = FALSE) + coord_trans(x = "log10", y = "log10") + geom_text(aes( x = 10, y = 4000, label = paste0("f(x)=", round(coef(lm(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm))), digits = 4),"x,R2 =",round(summary(lm(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm), data = ripdata_s))$r.squared, digits = 4)))) + ggtitle("Global fit model, WH vs DBH")
+
+write.csv("ripdata_ss", file = "~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/rd_lab3.csv")
  
 ```
 
