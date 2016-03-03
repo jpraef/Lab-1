@@ -16,10 +16,13 @@ knitr::opts_chunk$set(fig.width = 12, fig.height = 8, warning = FALSE, message =
 ndpkg <- function(p){
   ifelse(is.element(p,installed.packages()[,1]),require(p,character.only = T), install.packages(p, dep = T))
 }
-sapply(c("ggplot2", "reshape", "gridExtra", "car", "dplyr", "plyr"), ndpkg)
+sapply(c("HH", "ggplot2", "reshape"), ndpkg)
 
 #load subset data into the global environment as characters
-rd_lab4 <- read.csv("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/riparian_survey_subset.csv", row.names=1, stringsAsFactors=T)
+load("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/rd_lab3.rda")
+rd_lab4 <- ripdata_ss
+rd_lab4$Genus <- as.factor(rd_lab4$Genus)
+rm(ripdata_ss)
 ```
 
 Objective Statement:
@@ -33,13 +36,82 @@ Data:
 Code:
 
 ```{r Step 1, warnings = F}
-rd_lab4$projplot <- as.factor( paste(rd_lab4$ProjCode,rd_lab4$Plot.name))
+rd_lab4$projplot <- as.factor( paste(rd_lab4$ProjCode,rd_lab4$Plot.Name))
 
+#Generating mean, sd, and count of 5 most frequent genera at each plot.  Although not strictly necessary for the subset of trees, this code will be useful for other datasets.
+rd_sum <- data.frame(cbind(tapply(rd_lab4$Woody_Height_cm, rd_lab4$projplot, mean), tapply(rd_lab4$Woody_Height_cm,rd_lab4$projplot,sd),tapply(rd_lab4$Woody_Height_cm,rd_lab4$projplot,length)))
 
+colnames(rd_sum) <- c("htcmmn","htcmsd","plot.n")
 
+rd_sum$projplot <- as.factor(rownames(rd_sum))
+#needs greater than 1 measurement
+rd_sum <- rd_sum[rd_sum$plot.n >1 ,]
+#new column for labels
+rd_sum$proj <- as.factor(substr(rd_sum$projplot,1,5))
 
+projlevels <- levels(rd_sum$proj)
+
+for (p in 1:length(projlevels)){
+  print(summary(rd_sum[rd_sum$proj == projlevels[p],]))
+}
+
+lapply(projlevels, function(x) summary(rd_sum[rd_sum$proj == x,]))
+
+#randomly selecting 6 sample plot summaries from each project site
+nsamples <- 6
+ripres <-lapply(projlevels, function(x) rd_sum[which(rd_sum$proj == x),][sample(nrow(rd_sum[which(rd_sum$proj ==x),]),nsamples),])
+
+#do.call, similar to sapply, but not simple. only works on lists (hence lapply). Combining by each value (1-4) by rows.
+ripsample <- do.call(rbind,ripres)
+summary(ripsample$proj)
+#Find Coefficient of variation
+ripsample$cv <- with(ripsample, htcmsd/htcmmn)
+
+#one-way ANOVA 
+rip.proj.cv.aov <- aov(cv~proj, data = ripsample)
+summary(rip.proj.cv.aov)
+#vs
+summary.lm(rip.proj.cv.aov)
+#summary.lm returns a linear regression summary of cv ~ proj, including expanded coefficients, std. error, r2, residuals, p and t values.  Summary of the anova returns proj as a single variable, the residuals, sum of squares, mean squares, f value and degrees of freedom.  
+
+rip.aov.hsd <- TukeyHSD(rip.proj.cv.aov)
+rip.aov.hsd
+#Based on the adjusted p value (last column), there is no signifant difference between sites. From the one-way ANOVA, the predictors do not have a significant impact on the response.
+
+```
+
+```{r Step 2}
+#Two models:  First, with single terms (hcm ~ dbhcm), second with interaction (hcm ~ dbhcm * genus).  Looking first at hcm ~ dbhcm by Genus group.
+# + vs *: + calculates main effects only while * estimates interactions between factors.
+g1 <- ggplot(data = rd_lab4,aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_point() + theme_minimal() + labs(title = "Height ~ DBH", x = "DBH, cm", y = "Height, cm")
+
+#Model 1, simple global model
+glb_lm <- aov(Woody_Height_cm ~ Woody_DBH_cm, data = rd_lab4)
+
+#Model 2, global model with single terms.  
+glb_lm2 <- aov(Woody_Height_cm ~ Woody_DBH_cm + Genus, data = rd_lab4)
+
+#Model 3, global model with interaction terms.
+glb_lm3 <- aov(Woody_Height_cm ~ Woody_DBH_cm * Genus, data = rd_lab4)
+
+g2 <- ancovaplot(Woody_Height_cm ~ Woody_DBH_cm + Genus, data = rd_lab4)
+g3 <- ancovaplot(Woody_Height_cm ~ Woody_DBH_cm * Genus, data = rd_lab4)
+
+summary(glb_lm)
+summary.lm(glb_lm)
+
+summary(glb_lm2)
+summary.lm(glb_lm2)
+
+summary(glb_lm3)
+summary.lm(glb_lm3)
+#Model 3 explains the most variation of the three models (R2 = .6535).  The second model of the single terms indicates that the Fraxinus Genus is a significant predictor; however, model 3 indicates that the interactiion term between Fraxinus and DBH is significant.
+
+```
 
 Results:
+
+
 
 Discussion:
 
