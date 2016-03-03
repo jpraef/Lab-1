@@ -28,12 +28,11 @@ rd_lab4[,"DBH_cm_log"] <- log10(rd_lab4[,"Woody_DBH_cm"])
 ```
 
 Objective Statement:
-
 In order to reasonably estimate standing carbon, we will further refine our linear model between Diameter at Breast Height and Tree height, factored by either genus or project site.
 
 Methods:
 We determined the mean, standard deviation, and count, for the five subsetted genera by plot site.  Plots at which more than one measurement was taken were retained.  Of these, we randomly sampled 6 plot sites for each of the four project areas.  The coefficient of variation was calculated, and an ANOVA and an TukeyHSD were run to determine whether project area was a determining factor for tree height.
-We developed two linear models using genus as single terms and as an interaction variable describing Height (cm) ~ DBH (cm).  We forced a zero intercept to reflect seedling height and DBH at germination.
+We developed two linear models using genus as single terms and as an interaction variable describing Height (cm) ~ DBH (cm). The models were coerced with a zero intercept to reflect seedling height and DBH at germination.
 
 Data:
 The data are tree measurements from 4 riparian project areas in Northern California. We have previously cleansed the dataset for illogical or unknown values and subsetted for the 5 most frequent genera.  Outliers were identified and removed as well.  
@@ -128,10 +127,12 @@ Results:
 
 Based upon our random sample of plot by project area, we found tree height does not significantly vary based upon plot within project site (p value = .587, R2 = .09). Our initial model based upon untransformed values of Ht~ DBH (from lab 3) explained approximately 76% of the variance.  We increased our R2 in that case by log10 transforming variables.  We did not transform values for this report. The third model relating HT ~ DBH with genus as a factor and including interaction terms explained the majority of variance compared to the initial global model and a second model including single terms (R2 = .901, .76, and .89, respectively). 
 
-`r grid.arrange(g1,g2,g3, ncol = 3, top = "Height ~ DBH, Height ~ DBH + Genus, Height ~ DBH * Genus")`
+`r grid.arrange(g1,g2,g3, ncol = 3, top = "Height ~ DBH, Height ~ DBH + Genus, Height ~ DBH * Genus", bottom = "Figure 1: Scatterplot of Height vs DBH, ANCOVA plots by genus with genus as single terms and genus as interaction terms.")`
 
 
 Discussion:
+Our finding that project site does not have a significant effect on the relationship between height and DBH suggests that we use either height or DBH to estimate the effects of environmental conditions, rather than modeled biomass.  The relationship is dependent upon genus, as fig 1 shows.  The interaction with the genus Fraxinus was not significant in the third model, though previous models indicate that it is.  Fraxinus height and DBH are limited to lower values than the other genera; this, along with the scattered values at the limits of height and dbh, may sway the Fraxinus model to insignificance. 
 
 
 Limitations:
+Our subset of 5 genera limits our conclusions, especially as the counts of the 6th most frequent genus was close to the 5th.  It is unlikely that we would see site playing a different role on the height~dbh relationship in the other genera; however, a full report should address that.
