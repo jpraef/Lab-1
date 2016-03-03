@@ -2,7 +2,7 @@
 title: "Lab4"
 author: "Joseph Crockett"
 date: "March 1, 2016"
-output: html_document
+output: word_document
 ---
 Joseph Crockett
 ES 207: Environmental Data Analysis
