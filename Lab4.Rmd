@@ -16,7 +16,7 @@ knitr::opts_chunk$set(fig.width = 12, fig.height = 8, warning = FALSE, message =
 ndpkg <- function(p){
   ifelse(is.element(p,installed.packages()[,1]),require(p,character.only = T), install.packages(p, dep = T))
 }
-sapply(c("HH", "ggplot2", "reshape"), ndpkg)
+sapply(c("HH", "ggplot2", "reshape", "gridExtra"), ndpkg)
 
 #load subset data into the global environment as characters
 load("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/rd_lab3.rda")
@@ -93,7 +93,8 @@ rip.aov.hsd
 incpt <- 0.0
 
 
-g1 <- ggplot(data = rd_lab4,aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_point() + theme_minimal() + labs(title = "Height ~ DBH", x = "DBH, cm", y = "Height, cm")
+g1 <- ggplot(data = rd_lab4,aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_point() + theme_minimal() + labs(title = "", x = "DBH, cm", y = "Height, cm") + theme(legend.position = c(0,1), legend.justification = c(0,1))
+
 
 #Model 1, simple global model
 glb_lm <- aov(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm, data = rd_lab4)
@@ -107,8 +108,8 @@ glb_lm2 <- aov(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm) + Genus, data = r
 glb_lm3 <- aov(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm) * Genus, data = rd_lab4)
 
 
-g2 <- ancovaplot(Woody_Height_cm ~ Woody_DBH_cm + Genus, data = rd_lab4)
-g3 <- ancovaplot(Woody_Height_cm ~ Woody_DBH_cm * Genus, data = rd_lab4)
+g2 <- ancovaplot(Woody_Height_cm ~ Woody_DBH_cm + Genus, data = rd_lab4, title = "Woody_Height_cm ~ Woody_DBH_cm + Genus")
+g3 <- ancovaplot(Woody_Height_cm ~ Woody_DBH_cm * Genus, data = rd_lab4, title = "Woody_Height_cm ~ Woody_DBH_cm * Genus")
 
 summary(glb_lm)
 summary.lm(glb_lm)
@@ -125,7 +126,10 @@ summary.lm(glb_lm3)
 
 Results:
 
-Based upon our random sample of plot by project area, we found tree height does not significantly vary based upon plot within project site (p value = .587, R2 = .09). Our initial model based upon untransformed values of Ht~ DBH (from lab 3) explained approximately 76% of the variance.  We increased our R2 in that case by log10 transforming variables.  We did not transform values for this report. The third model relating HT ~ DBH with genus as a factor and including interaction terms explained the majority of variance compared to the initial global model and a second model including single terms (R2 = .901, .76, and .89, respectively)
+Based upon our random sample of plot by project area, we found tree height does not significantly vary based upon plot within project site (p value = .587, R2 = .09). Our initial model based upon untransformed values of Ht~ DBH (from lab 3) explained approximately 76% of the variance.  We increased our R2 in that case by log10 transforming variables.  We did not transform values for this report. The third model relating HT ~ DBH with genus as a factor and including interaction terms explained the majority of variance compared to the initial global model and a second model including single terms (R2 = .901, .76, and .89, respectively). 
+
+`r grid.arrange(g1,g2,g3, ncol = 3, top = "Height ~ DBH, Height ~ DBH + Genus, Height ~ DBH * Genus")`
+
 
 Discussion:
 
