@@ -9,13 +9,35 @@ ES 207: Environmental Data Analysis
 March 1, 2016
 Homework Assignment 4
 
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(fig.width = 12, fig.height = 8, warning = FALSE, message = FALSE)
+
+#check for needed packages, install if needed, require if not
+ndpkg <- function(p){
+  ifelse(is.element(p,installed.packages()[,1]),require(p,character.only = T), install.packages(p, dep = T))
+}
+sapply(c("ggplot2", "reshape", "gridExtra", "car", "dplyr", "plyr"), ndpkg)
+
+#load subset data into the global environment as characters
+rd_lab4 <- read.csv("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/riparian_survey_subset.csv", row.names=1, stringsAsFactors=T)
+```
+
 Objective Statement:
+
 In order to reasonably estimate standing carbon, we will further refine our linear model between Diameter at Breast Height and Tree height, factored by either genus and Project site.
 
 Methods:
 
 Data:
+
 Code:
+
+```{r Step 1, warnings = F}
+rd_lab4$projplot <- as.factor( paste(rd_lab4$ProjCode,rd_lab4$Plot.name))
+
+
+
+
 
 Results:
 
