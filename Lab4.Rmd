@@ -127,7 +127,9 @@ Results:
 
 Based upon our random sample of plot by project area, we found tree height does not significantly vary based upon plot within project site (p value = .587, R2 = .09). Our initial model based upon untransformed values of Ht~ DBH (from lab 3) explained approximately 76% of the variance.  We increased our R2 in that case by log10 transforming variables.  We did not transform values for this report. The third model relating HT ~ DBH with genus as a factor and including interaction terms explained the majority of variance compared to the initial global model and a second model including single terms (R2 = .901, .76, and .89, respectively). 
 
-`r grid.arrange(g1,g2,g3, ncol = 3, top = "Height ~ DBH, Height ~ DBH + Genus, Height ~ DBH * Genus", bottom = "Figure 1: Scatterplot of Height vs DBH, ANCOVA plots by genus with genus as single terms and genus as interaction terms.")`
+```{r}
+grid.arrange(g1,g2,g3, ncol = 3, top = "Height ~ DBH, Height ~ DBH + Genus, Height ~ DBH * Genus", bottom = "Figure 1: Scatterplot of Height vs DBH, ANCOVA plots by genus with genus as single terms and genus as interaction terms.")
+```
 
 
 Discussion:
