@@ -23,22 +23,27 @@ load("~/Desktop/Documents/Writings/Spring 2016/ES 207/Labs/Lab1/rd_lab3.rda")
 rd_lab4 <- ripdata_ss
 rd_lab4$Genus <- as.factor(rd_lab4$Genus)
 rm(ripdata_ss)
+rd_lab4[,"WH_cm_log"] <- log10(rd_lab4[,"Woody_Height_cm"])
+rd_lab4[,"DBH_cm_log"] <- log10(rd_lab4[,"Woody_DBH_cm"])
 ```
 
 Objective Statement:
 
-In order to reasonably estimate standing carbon, we will further refine our linear model between Diameter at Breast Height and Tree height, factored by either genus and Project site.
+In order to reasonably estimate standing carbon, we will further refine our linear model between Diameter at Breast Height and Tree height, factored by either genus or project site.
 
 Methods:
+We determined the mean, standard deviation, and count, for the five subsetted genera by plot site.  Plots at which more than one measurement was taken were retained.  Of these, we randomly sampled 6 plot sites for each of the four project areas.  The coefficient of variation was calculated, and an ANOVA and an TukeyHSD were run to determine whether project area was a determining factor for tree height.
+We developed two linear models using genus as single terms and as an interaction variable describing Height (cm) ~ DBH (cm).  We forced a zero intercept to reflect seedling height and DBH at germination.
 
 Data:
+The data are tree measurements from 4 riparian project areas in Northern California. We have previously cleansed the dataset for illogical or unknown values and subsetted for the 5 most frequent genera.  Outliers were identified and removed as well.  
 
 Code:
 
 ```{r Step 1, warnings = F}
 rd_lab4$projplot <- as.factor( paste(rd_lab4$ProjCode,rd_lab4$Plot.Name))
 
-#Generating mean, sd, and count of 5 most frequent genera at each plot.  Although not strictly necessary for the subset of trees, this code will be useful for other datasets.
+#Generating mean, sd, and count of 5 most frequent genera at each plot.
 rd_sum <- data.frame(cbind(tapply(rd_lab4$Woody_Height_cm, rd_lab4$projplot, mean), tapply(rd_lab4$Woody_Height_cm,rd_lab4$projplot,sd),tapply(rd_lab4$Woody_Height_cm,rd_lab4$projplot,length)))
 
 colnames(rd_sum) <- c("htcmmn","htcmsd","plot.n")
@@ -64,6 +69,7 @@ ripres <-lapply(projlevels, function(x) rd_sum[which(rd_sum$proj == x),][sample(
 #do.call, similar to sapply, but not simple. only works on lists (hence lapply). Combining by each value (1-4) by rows.
 ripsample <- do.call(rbind,ripres)
 summary(ripsample$proj)
+
 #Find Coefficient of variation
 ripsample$cv <- with(ripsample, htcmsd/htcmmn)
 
@@ -83,16 +89,23 @@ rip.aov.hsd
 ```{r Step 2}
 #Two models:  First, with single terms (hcm ~ dbhcm), second with interaction (hcm ~ dbhcm * genus).  Looking first at hcm ~ dbhcm by Genus group.
 # + vs *: + calculates main effects only while * estimates interactions between factors.
+#In addition, forcing a zero intercept.
+incpt <- 0.0
+
+
 g1 <- ggplot(data = rd_lab4,aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_point() + theme_minimal() + labs(title = "Height ~ DBH", x = "DBH, cm", y = "Height, cm")
 
 #Model 1, simple global model
-glb_lm <- aov(Woody_Height_cm ~ Woody_DBH_cm, data = rd_lab4)
+glb_lm <- aov(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm, data = rd_lab4)
+
 
 #Model 2, global model with single terms.  
-glb_lm2 <- aov(Woody_Height_cm ~ Woody_DBH_cm + Genus, data = rd_lab4)
+glb_lm2 <- aov(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm) + Genus, data = rd_lab4)
+
 
 #Model 3, global model with interaction terms.
-glb_lm3 <- aov(Woody_Height_cm ~ Woody_DBH_cm * Genus, data = rd_lab4)
+glb_lm3 <- aov(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm) * Genus, data = rd_lab4)
+
 
 g2 <- ancovaplot(Woody_Height_cm ~ Woody_DBH_cm + Genus, data = rd_lab4)
 g3 <- ancovaplot(Woody_Height_cm ~ Woody_DBH_cm * Genus, data = rd_lab4)
@@ -105,15 +118,18 @@ summary.lm(glb_lm2)
 
 summary(glb_lm3)
 summary.lm(glb_lm3)
-#Model 3 explains the most variation of the three models (R2 = .6535).  The second model of the single terms indicates that the Fraxinus Genus is a significant predictor; however, model 3 indicates that the interactiion term between Fraxinus and DBH is significant.
+
+#Model 3 explains the most variation of the three models (R2 = .901).  The second model of the single terms indicates that the Fraxinus Genus is a significant predictor; however, model 3 indicates that the Fraxinus and interaction term between Fraxinus and DBH is not significant (pr(>|t|) == .6154 and .3366, respectively).
 
 ```
 
 Results:
 
-
+Based upon our random sample of plot by project area, we found tree height does not significantly vary based upon plot within project site (p value = .587, R2 = .09). Our initial model based upon untransformed values of Ht~ DBH (from lab 3) explained approximately 76% of the variance.  We increased our R2 in that case by log10 transforming variables.  We did not transform values for this report. The third model relating HT ~ DBH with genus as a factor and including interaction terms explained the majority of variance compared to the initial global model and a second model including single terms (R2 = .901, .76, and .89, respectively)
 
 Discussion:
 
+
 Limitations:
+
 
