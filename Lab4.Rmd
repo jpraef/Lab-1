@@ -2,7 +2,7 @@
 title: "Lab4"
 author: "Joseph Crockett"
 date: "March 1, 2016"
-output: html_document
+output: word_document
 ---
 Joseph Crockett
 ES 207: Environmental Data Analysis
@@ -14,7 +14,7 @@ knitr::opts_chunk$set(fig.width = 12, fig.height = 8, warning = FALSE, message =
 
 #check for needed packages, install if needed, require if not
 ndpkg <- function(p){
-  ifelse(is.element(p,installed.packages()[,1]),require(p,character.only = T), install.packages(p, dep = T))
+ ifelse(is.element(p,installed.packages()[,1]),require(p,character.only = T), install.packages(p, dep = T))
 }
 sapply(c("HH", "ggplot2", "reshape", "gridExtra"), ndpkg)
 
@@ -28,12 +28,11 @@ rd_lab4[,"DBH_cm_log"] <- log10(rd_lab4[,"Woody_DBH_cm"])
 ```
 
 Objective Statement:
-
 In order to reasonably estimate standing carbon, we will further refine our linear model between Diameter at Breast Height and Tree height, factored by either genus or project site.
 
 Methods:
 We determined the mean, standard deviation, and count, for the five subsetted genera by plot site.  Plots at which more than one measurement was taken were retained.  Of these, we randomly sampled 6 plot sites for each of the four project areas.  The coefficient of variation was calculated, and an ANOVA and an TukeyHSD were run to determine whether project area was a determining factor for tree height.
-We developed two linear models using genus as single terms and as an interaction variable describing Height (cm) ~ DBH (cm).  We forced a zero intercept to reflect seedling height and DBH at germination.
+We developed two linear models using genus as single terms and as an interaction variable describing Height (cm) ~ DBH (cm). The models were coerced with a zero intercept to reflect seedling height and DBH at germination.
 
 Data:
 The data are tree measurements from 4 riparian project areas in Northern California. We have previously cleansed the dataset for illogical or unknown values and subsetted for the 5 most frequent genera.  Outliers were identified and removed as well.  
@@ -57,7 +56,7 @@ rd_sum$proj <- as.factor(substr(rd_sum$projplot,1,5))
 projlevels <- levels(rd_sum$proj)
 
 for (p in 1:length(projlevels)){
-  print(summary(rd_sum[rd_sum$proj == projlevels[p],]))
+ print(summary(rd_sum[rd_sum$proj == projlevels[p],]))
 }
 
 lapply(projlevels, function(x) summary(rd_sum[rd_sum$proj == x,]))
@@ -89,51 +88,40 @@ rip.aov.hsd
 ```{r Step 2}
 #Two models:  First, with single terms (hcm ~ dbhcm), second with interaction (hcm ~ dbhcm * genus).  Looking first at hcm ~ dbhcm by Genus group.
 # + vs *: + calculates main effects only while * estimates interactions between factors.
-#In addition, forcing a zero intercept.
-incpt <- 0.0
 
-
-g1 <- ggplot(data = rd_lab4,aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus)) + geom_point() + theme_minimal() + labs(title = "", x = "DBH, cm", y = "Height, cm") + theme(legend.position = c(0,1), legend.justification = c(0,1))
-
+g1 <- ggplot(data = rd_lab4) + geom_point(aes(x = Woody_DBH_cm, y = Woody_Height_cm, color = Genus, shape = ProjCode)) + theme_minimal() + labs(title = "", x = "DBH, cm", y = "Height, cm") + theme(legend.position = "none",axis.text.x = element_text(angle = 90, size = 5), axis.text.y = element_text(size = 5)) + geom_smooth(aes(x = Woody_DBH_cm, y = Woody_Height_cm), formula = y~x, method = "lm")
 
 #Model 1, simple global model
-glb_lm <- aov(I(Woody_Height_cm - incpt) ~ 0 + Woody_DBH_cm, data = rd_lab4)
-
-
-#Model 2, global model with single terms.  
-glb_lm2 <- aov(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm) + Genus, data = rd_lab4)
-
+glb_lm <- lm(Woody_Height_cm ~ Woody_DBH_cm, data = rd_lab4)
+summary(glb_lm)
+anova(glb_lm)
 
 #Model 3, global model with interaction terms.
-glb_lm3 <- aov(I(Woody_Height_cm - incpt) ~ (0 + Woody_DBH_cm) * Genus, data = rd_lab4)
-
-
-g2 <- ancovaplot(Woody_Height_cm ~ Woody_DBH_cm + Genus, data = rd_lab4, title = "Woody_Height_cm ~ Woody_DBH_cm + Genus")
-g3 <- ancovaplot(Woody_Height_cm ~ Woody_DBH_cm * Genus, data = rd_lab4, title = "Woody_Height_cm ~ Woody_DBH_cm * Genus")
-
-summary(glb_lm)
-summary.lm(glb_lm)
-
-summary(glb_lm2)
-summary.lm(glb_lm2)
-
+glb_lm3 <- lm(Woody_Height_cm ~ (Woody_DBH_cm + Genus + ProjCode)^2, data = rd_lab4)
 summary(glb_lm3)
-summary.lm(glb_lm3)
+anova(glb_lm3)
+
+g2 <- ggplot(data = rd_lab4, aes(Woody_DBH_cm, Woody_Height_cm)) + geom_point(aes(color = Genus, shape = ProjCode)) + geom_smooth(method = "lm", formula = y ~ x ) + theme_minimal()+ facet_grid(ProjCode ~ Genus) + theme(legend.position = "top", legend.direction = "horizontal", axis.text.x = element_text(angle = 90, size = 5), axis.text.y = element_text(size = 5)) 
+
+g3 <-ggplot(data = rd_lab4, aes(Woody_DBH_cm, Woody_Height_cm, color = Genus, shape = ProjCode))+ theme_minimal() + geom_point(, alpha = .7) + geom_smooth(method = "lm", formula = y ~ x, se = F, size =.4) + theme(legend.position = "none",axis.text.x = element_text(angle = 90, size = 5), axis.text.y = element_text(size = 5)) 
+
 
 #Model 3 explains the most variation of the three models (R2 = .901).  The second model of the single terms indicates that the Fraxinus Genus is a significant predictor; however, model 3 indicates that the Fraxinus and interaction term between Fraxinus and DBH is not significant (pr(>|t|) == .6154 and .3366, respectively).
 
 ```
 
 Results:
+Based upon our random sample of plot by project area, we found tree height does not significantly vary based upon plot within project site (p value = .297, R2 = .09, F-value =  1.315). Our initial model based upon untransformed values of Ht~ DBH (from lab 3) explained approximately 76% of the variance if a zero intercept were forced.  We increased our R2 in that case by log10 transforming variables.  We did not transform values for this report or force a zero intercept. The second model relating HT ~ DBH with genus as a factor and including interaction terms explained the majority of variance compared to the initial global model including single terms (R2 = 56 and.68 respectively). Analysis of interactions of covariates in the second model also indicates that several interactions are superfluous and can be removed to increase model fit (see HOWY:Salix, HOWY:Fraxinus, NASO:Quercus, and NASO:Fraxinus in Fig 1).
+>>>>>>> 67dc5945be406d2c80eea5e8a2dccb54cc91767a
 
-Based upon our random sample of plot by project area, we found tree height does not significantly vary based upon plot within project site (p value = .587, R2 = .09). Our initial model based upon untransformed values of Ht~ DBH (from lab 3) explained approximately 76% of the variance.  We increased our R2 in that case by log10 transforming variables.  We did not transform values for this report. The third model relating HT ~ DBH with genus as a factor and including interaction terms explained the majority of variance compared to the initial global model and a second model including single terms (R2 = .901, .76, and .89, respectively). 
-
-`r grid.arrange(g1,g2,g3, ncol = 3, top = "Height ~ DBH, Height ~ DBH + Genus, Height ~ DBH * Genus")`
+```{r}
+grid.arrange(g1,g2, g3, ncol = 3, top = "Height ~ DBH, Height ~ (DBH + Genus + ProjCode)^2" )
+```
 
 
 Discussion:
+Our finding that project site does not have a significant effect on the relationship between height and DBH suggests that we use either height or DBH to estimate the effects of environmental conditions, rather than modeled biomass.  The relationship is dependent upon genus, as fig 1 shows.  Several terms can be removed from the model, including Fraxinus and several interactions with Salix.  Certain interactions with Salix have a negative trend, suggesting that there is an issue with not forcing a zero intercept.
 
 
 Limitations:
-
-
+Our subset of 5 genera limits our conclusions, especially as the counts of the 6th most frequent genus was close to the 5th.  It is unlikely that we would see site playing a different role on the height~dbh relationship in the other genera; however, a full report should address that. Finally, the relationships with several interactions indicate that zero intercepts must be forced to accurately depict the relationships between DBH and height
