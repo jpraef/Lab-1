@@ -10,7 +10,7 @@ opts_chunk$set(tidy=T, tidy.opts=list(width.cutoff=60))
 ```
 ### Homework Assignment 1
 
-#### Objective Statement
+#### Objective Statement 
 Technological advances in LiDAR systems have both increased the accuracy and reduced cost in recent years, however, both system cost and labor required to process data is prohibitive at the biome-scale.  Using LiDAR measurements of Sierra Nevada conifers, our objective is to determine, if any, the relationship between crown spread and tree height.  A positive correlaton would inform a model that utilizes less costly remote sensing systems (i.e. Landsat/ NAIP) to estimate tree height from aerial images.  From such a model, standing carbon can be estimated from conifer biomass (volumes).
 
 #### Methods

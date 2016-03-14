@@ -1,0 +1,73 @@
+---
+title: "Lab5"
+output: html_document
+---
+
+Joseph Crockett
+ES 207: Environmental Data Analysis
+March 1, 2016
+Homework Assignment 4
+
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(fig.width = 12, fig.height = 8, warning = FALSE, message = FALSE)
+
+#check for needed packages, install if needed, require if not
+ndpkg <- function(p){
+ ifelse(is.element(p,installed.packages()[,1]),require(p,character.only = T), install.packages(p, dep = T))
+}
+sapply(c("raster", "rgdal","HH", "ggplot2", "reshape"), ndpkg)
+
+n#load subset data into the global environment as characters
+xld = "~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/rd_lab3.rda"
+
+```
+Joseph Crockett 
+ES 207: Environmental Data Analysis  
+March 14th 2016  
+Homework Assignment 5  
+
+
+Objective Statement:  
+Preliminary results indicate that a linear function relates tree height to diameter at breast height (DBH) and genus.  We will extend this analysis to include prediction of tree height based on DBH measurements, genus, and an additional environmental covariate to assess standing carbon at a project site without tree height measurements. 
+
+Methods:  
+All analysis was conducted using R version 3.2.3 "Wooden Christmas Tree" (R Core Team 2015). We extracted mean August temperature, August precipitation, elevation, longitude, and latitude of our four project sites using the R packages rgdal and raster (Bivand 2015 and Hijmans 2015). After exploratory data analysis, we developed four models that took the form 
+$$ ht ~ dbh * genus + parameter $$
+In which ht is tree height, dbh is Diameter at Breast Height, genus is the five genera of greatest frequency at project sites, and parameter is temperature, precipitation, elevation, longitude, or latitude.  We forced a zero intercept for each model to accurately depict the 0 - 0 relationship between height and dbh at germination.  Each model was compared against the base interaction model ht ~ dbh * genus and each other. P-values, R^2^, and AIC values were considered. The R functions step and stepAIC from the MASS package were also utilized (
+Data:  
+Code:  
+
+Results:  
+
+Discussion:  
+
+Limitations:
+
+Citations:  
+H. Wickham. ggplot2: Elegant Graphics for Data Analysis.
+  Springer-Verlag New York, 2009.
+
+H. Wickham. Reshaping data with the reshape package. Journal of
+  Statistical Software, 21(12), 2007.
+  
+R Core Team (2015). R: A language and environment for statistical
+  computing. R Foundation for Statistical Computing, Vienna, Austria.
+  URL https://www.R-project.org/.  
+  
+Richard M. Heiberger (2016). HH: Statistical Analysis and Data
+  Display: Heiberger and Holland. R package version 3.1-25. URL
+  http://CRAN.R-project.org/package=HH
+  
+Roger Bivand, Tim Keitt and Barry Rowlingson (2015). rgdal: Bindings
+  for the Geospatial Data Abstraction Library. R package version 1.0-4.
+  https://CRAN.R-project.org/package=rgdal  
+  
+Robert J. Hijmans (2015). raster: Geographic Data Analysis and
+  Modeling. R package version 2.5-2.
+  https://CRAN.R-project.org/package=raster  
+  
+Venables, W. N. & Ripley, B. D. (2002) Modern Applied
+  Statistics with S. Fourth Edition. Springer, New York. ISBN
+  0-387-95457-0
+  
