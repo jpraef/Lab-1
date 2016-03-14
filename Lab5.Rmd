@@ -34,15 +34,44 @@ Preliminary results indicate that a linear function relates tree height to diame
 Methods:  
 All analysis was conducted using R version 3.2.3 "Wooden Christmas Tree" (R Core Team 2015). We extracted mean August temperature, August precipitation, elevation, longitude, and latitude of our four project sites using the R packages rgdal and raster (Bivand 2015 and Hijmans 2015). After exploratory data analysis, we developed four models that took the form 
 $$ ht ~ dbh * genus + parameter $$
-In which ht is tree height, dbh is Diameter at Breast Height, genus is the five genera of greatest frequency at project sites, and parameter is temperature, precipitation, elevation, longitude, or latitude.  We forced a zero intercept for each model to accurately depict the 0 - 0 relationship between height and dbh at germination.  Each model was compared against the base interaction model ht ~ dbh * genus and each other. P-values, R^2^, and AIC values were considered. The R functions step and stepAIC from the MASS package were also utilized (
+In which ht is tree height, dbh is Diameter at Breast Height, genus is the five genera of greatest frequency at project sites, and parameter is temperature, precipitation, elevation, or latitude. We forced a zero intercept for each model to accurately depict the 0 - 0 relationship between height and dbh at germination.  Each model was compared against the base interaction model ht ~ dbh * genus and each other. P-values, R^2^, and AIC values were considered. The R function stepAIC from the MASS package was used to compare AIC values.
 Data:  
-Code:  
+The data are tree measurements from 4 riparian project areas in Northern California. We have previously cleansed the dataset for illogical or unknown values and subsetted for the 5 most frequent genera.  Outliers have been identified and removed. We extracted longitude, latitude, elevation, August precipitation, and mean Augus temperature from the raster files "DEM.tif", "precip_8.tif", and "tmean_8.tif".  
 
+Code: 
+```{r Data}
+# Load cleaned tree data and use raster and readGDAL to load DEM, precip_8, and tmean_8.
+riparian_cleaned <- read.csv("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/Data/riparian_cleaned.csv", stringsAsFactors=FALSE)
+gdal_grid = readGDAL("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/Data/DEM.tif")
+r1 = raster(gdal_grid)
+#convert raster to points for plotting
+r1_p <- data.frame(rasterToPoints(r1))
+colnames(r1_p) <- c("Longitude", "Latitude", "DEM")
+
+
+```
+
+```{r Step 1}
+# Plot the DEM data using ggplot 2 and superimpose project locations on the map. 
+# Extract values from rasters and add to data frame
+# EDA on new values, specifically distribution and correlation
+
+
+```
+
+```{r Step 2}
+# Build initial model, ht ~ dbh * genus
+# Build four additional models: ht ~
+```
+
+```{r Step 3}
+```
 Results:  
 
 Discussion:  
 
 Limitations:
+We do not include longitude in our analysis because elevation's in California change over east-west rather than north-south
 
 Citations:  
 H. Wickham. ggplot2: Elegant Graphics for Data Analysis.
