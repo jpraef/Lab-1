@@ -73,7 +73,7 @@ r1_p <- data.frame(rasterToPoints(r1))
 colnames(r1_p) <- c("Longitude", "Latitude", "DEM")
 r1_pf <- filter(r1_p, Longitude >= min(r2_p$Longitude) & Longitude <= max(r2_p$Longitude) & Latitude >= min(r2_p$Latitude) & Latitude <= max(r2_p$Latitude))
 
-r1_pp<- ggplot(data = r1_pf, aes(x = Longitude, y = Latitude)) + geom_raster(aes(fill = DEM)) + geom_point(data = ProjLoc, aes(x = Longitude, y = Latitude, color = ProjCode), size = 3, shape = 4) + theme_minimal() + coord_equal() + scale_fill_gradient("DEM (ft)", low = "black", high = "white",limits = c(-90, 4000)) + theme(legend.justification=c(1,0), legend.position=c(0,1))
+r1_pp<- ggplot(data = r1_pf, aes(x = Longitude, y = Latitude)) + geom_raster(aes(fill = DEM)) + geom_point(data = ProjLoc, aes(x = Longitude, y = Latitude, color = ProjCode), size = 3, shape = 4) + theme_minimal() + coord_equal() + scale_fill_gradient("DEM (ft)", low = "black", high = "white",limits = c(-90, 4000))
 
 #tavg
 r3_p <- data.frame(rasterToPoints(r3))
@@ -93,14 +93,7 @@ ripdata_ss$elevation <- extract(r1, xy)
 ripdata_ss$tavg_Aug <- extract(r3, xy)
 
 describe(ripdata_ss) #pysch package
-#Note: elevation, dbh, height, and precp are skewed right, while tavg is slightly skewed left.  SD and Mean seem to scale together.  A log transform worked well in the past, but perhaps a boxcox transformation would work as well.
-par(mfrow = c(2,3))
-boxcox(lm(Woody_Height_cm ~ precp_Aug, data = ripdata_ss), seq(0,1,0.1))
-boxcox(lm(Woody_Height_cm ~ Latitude, data = ripdata_ss))
-boxcox(lm(Woody_Height_cm ~ Woody_DBH_cm, data = ripdata_ss))
-boxcox(lm(Woody_Height_cm ~ Woody_DBH_cm, data = ripdata_ss))
-boxcox(lm(Woody_Height_cm ~ Woody_DBH_cm, data = ripdata_ss))
-par(mfrow = c(1,1))
+#Note: elevation, dbh, height, and precp are skewed right, while tavg is slightly skewed left.  SD and Mean seem to scale together.  A log transform worked well in the past
 
 prg <- stack(select(ripdata_ss, elevation, precp_Aug, tavg_Aug, Latitude, Woody_DBH_cm, Woody_Height_cm))
 
@@ -128,6 +121,14 @@ tru <- ggplot(prg2, aes(x = values)) + geom_density(aes(fill = ind), alpha = .3)
 
 ```
 
+Study Area:
+```{r}
+r1_pp
+r2_pp
+r3_pp
+             
+```
+
 ```{r Step 2}
 #Create Data.frame for important comparisons
 all_val <- data.frame(R2 = 1:7, AIC = 1:7)
@@ -142,15 +143,10 @@ summary(lm_init)
 all_val[1,"R2"] <- summary(lm_init)$r.squared
 all_val[1,"AIC"] <- AIC(lm_init)
 
-
-
 par(mfrow = c(2,2))
 plot(lm_init)
 par(mfrow = c(1,1))
 #The qq plot indicates that normality has not been achieved, and residuals vs fitted has a funnel-esque shape, thus some heteroscedasticity that can be corrected
-
-boxcox(lm_init)
-
 
 plot(residuals(lm_init) ~ predict(lm_init), xlab = "Predicted Values", ylab = "Residuals")
 shapiro.test(residuals(lm_init)) #shapiro-wilk test for normality of residuals
