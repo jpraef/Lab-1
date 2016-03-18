@@ -16,7 +16,7 @@ knitr::opts_chunk$set(fig.width = 12, fig.height = 8, warning = FALSE, message =
 ndpkg <- function(p){
  ifelse(is.element(p,installed.packages()[,1]),require(p,character.only = T), install.packages(p, dep = T))
 }
-sapply(c("raster", "rgdal","HH", "ggplot2", "reshape"), ndpkg)
+sapply(c("raster", "rgdal","HH", "ggplot2", "reshape", "gridExtra", "dplyr", "psych","car","MASS"), ndpkg)
 
 n#load subset data into the global environment as characters
 xld = "~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/rd_lab3.rda"
@@ -41,44 +41,222 @@ The data are tree measurements from 4 riparian project areas in Northern Califor
 Code: 
 ```{r Data}
 # Load cleaned tree data and use raster and readGDAL to load DEM, precip_8, and tmean_8.
-riparian_cleaned <- read.csv("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/Data/riparian_cleaned.csv", stringsAsFactors=FALSE)
-gdal_grid = readGDAL("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/Data/DEM.tif")
-r1 = raster(gdal_grid)
-#convert raster to points for plotting
-r1_p <- data.frame(rasterToPoints(r1))
-colnames(r1_p) <- c("Longitude", "Latitude", "DEM")
+load("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/Data/rd_lab3.rda")
+ProjLoc <- aggregate(cbind(Longitude,Latitude) ~ ProjCode,
+data=ripdata_ss, mean)
+
+gdal_grid2 = readGDAL("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/Data/precip_8.tif")
+
+r2 = raster(gdal_grid2)
+
+gdal_grid1 = readGDAL("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/Data/DEM.tif")
+r1 = raster(gdal_grid1)
+
+gdal_grid3 = readGDAL("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/Data/tmean_8.tif")
+
+r3 = raster(gdal_grid3)
+
+
 
 
 ```
 
 ```{r Step 1}
-# Plot the DEM data using ggplot 2 and superimpose project locations on the map. 
+# Plot the precip data using ggplot 2 and superimpose project locations on the map.
+r2_p <- data.frame(rasterToPoints(r2))
+colnames(r2_p) <- c("Longitude", "Latitude", "Precip")
+
+r2_pp <- ggplot(data = r2_p, aes(x = Longitude, y = Latitude)) + geom_raster(aes(fill = Precip)) + geom_point(data = ProjLoc, aes(x = Longitude, y = Latitude, color = ProjCode), size = 3, shape = 4) + theme_minimal() + coord_equal() + scale_fill_gradient("August Precipitation(mm)", limits = c(-1, 25))
+
+#DEM
+r1_p <- data.frame(rasterToPoints(r1))
+colnames(r1_p) <- c("Longitude", "Latitude", "DEM")
+r1_pf <- filter(r1_p, Longitude >= min(r2_p$Longitude) & Longitude <= max(r2_p$Longitude) & Latitude >= min(r2_p$Latitude) & Latitude <= max(r2_p$Latitude))
+
+r1_pp<- ggplot(data = r1_pf, aes(x = Longitude, y = Latitude)) + geom_raster(aes(fill = DEM)) + geom_point(data = ProjLoc, aes(x = Longitude, y = Latitude, color = ProjCode), size = 3, shape = 4) + theme_minimal() + coord_equal() + scale_fill_gradient("DEM (ft)", low = "black", high = "white",limits = c(-90, 4000)) + theme(legend.justification=c(1,0), legend.position=c(0,1))
+
+#tavg
+r3_p <- data.frame(rasterToPoints(r3))
+colnames(r3_p) <- c("Longitude", "Latitude", "Tavg")
+r3_pf <- filter(r3_p, Longitude >= min(r2_p$Longitude) & Longitude <= max(r2_p$Longitude) & Latitude >= min(r2_p$Latitude) & Latitude <= max(r2_p$Latitude))
+
+r3_pp <- ggplot(data = r3_pf, aes(x = Longitude, y = Latitude)) + geom_raster(aes(fill = Tavg)) + geom_point(data = ProjLoc, aes(x = Longitude, y = Latitude, color = ProjCode), size = 3, shape = 4) + theme_minimal() + coord_equal() + scale_fill_gradient("August Temperature(K)", low = "gold", high = "darkred", limits = c(280, 310))
+
 # Extract values from rasters and add to data frame
+
+lat <- ripdata_ss$Latitude
+lon <- ripdata_ss$Longitude
+xy <- cbind(lon, lat)
+
+ripdata_ss$precp_Aug <- extract(r2, xy)
+ripdata_ss$elevation <- extract(r1, xy)
+ripdata_ss$tavg_Aug <- extract(r3, xy)
+
+describe(ripdata_ss) #pysch package
+#Note: elevation, dbh, height, and precp are skewed right, while tavg is slightly skewed left.  SD and Mean seem to scale together.  A log transform worked well in the past, but perhaps a boxcox transformation would work as well.
+par(mfrow = c(2,3))
+boxcox(ripdata_ss$Woody_Height_cm)
+boxcox(lm(Woody_Height_cm ~ precp_Aug, data = ripdata_ss), seq(0,1,0.1))
+boxcox(lm(Woody_Height_cm ~ Latitude, data = ripdata_ss))
+boxcox(lm(Woody_Height_cm ~ Woody_DBH_cm, data = ripdata_ss))
+boxcox(lm(Woody_Height_cm ~ Woody_DBH_cm, data = ripdata_ss))
+boxcox(lm(Woody_Height_cm ~ Woody_DBH_cm, data = ripdata_ss))
+
+prg <- stack(select(ripdata_ss, elevation, precp_Aug, tavg_Aug, Latitude, Woody_DBH_cm, Woody_Height_cm))
+
+nw <- ggplot(prg, aes(x = values)) + geom_density(aes(fill = ind), alpha = .3) + facet_wrap(~ind, scales = "free", nrow = 5) + theme_minimal() + guides(fill = F)
 # EDA on new values, specifically distribution and correlation
 
+pairs(~Woody_Height_cm + Woody_DBH_cm + elevation + precp_Aug + tavg_Aug + Latitude, data = ripdata_ss, main = "Scatterplot Matrix, Riparian Data")
+cor.test(~Woody_Height_cm + Woody_DBH_cm, data = ripdata_ss)
+cor.test(~Woody_Height_cm + elevation, data = ripdata_ss)
+cor.test(~Woody_Height_cm + precp_Aug, data = ripdata_ss)
+cor.test(~Woody_Height_cm + tavg_Aug, data = ripdata_ss)
+cor.test(~Woody_Height_cm + Latitude, data = ripdata_ss)
+
+
+ripdata_ss$log_DBH <- log(ripdata_ss$Woody_DBH_cm)
+ripdata_ss$log_ht <- log(ripdata_ss$Woody_Height_cm)
+ripdata_ss$log_elev <- sqrt(ripdata_ss$elevation)
+ripdata_ss$log_pA <- log(ripdata_ss$precp_Aug)
+
+prg2 <- stack(select(ripdata_ss, log_DBH, log_ht, tavg_Aug, log_elev, log_pA, Latitude))
+
+tru <- ggplot(prg2, aes(x = values)) + geom_density(aes(fill = ind), alpha = .3) + facet_wrap(~ind, scales = "free", nrow = 5) + theme_minimal() + guides(fill = F)
+
+#The log transformations do not appear to affect elevation or precipitation.  
 
 ```
 
 ```{r Step 2}
+#Create Data.frame for important comparisons
+all_val <- data.frame(R2 = 1:7, AIC = 1:7)
+
 # Build initial model, ht ~ dbh * genus
-# Build four additional models: ht ~
+lm_init <- lm(Woody_Height_cm ~ Woody_DBH_cm * Genus, data = ripdata_ss)
+anova(lm_init)
+summary(lm_init)
+#Notes: Fraxinus does not have a significant p-value
+
+#I am basing my models off of AIC and r.squared: high r.squared and low AIC
+all_val[1,"R2"] <- summary(lm_init)$r.squared
+all_val[1,"AIC"] <- AIC(lm_init)
+
+
+
+par(mfrow = c(2,2))
+plot(lm_init)
+par(mfrow = c(1,1))
+#The qq plot indicates that normality has not been achieved, and residuals vs fitted has a funnel-esque shape, thus some heteroscedasticity that can be corrected
+
+boxcox(lm_init)
+
+
+plot(residuals(lm_init) ~ predict(lm_init), xlab = "Predicted Values", ylab = "Residuals")
+shapiro.test(residuals(lm_init)) #shapiro-wilk test for normality of residuals
+#p-value < 2.2e-16: not normally distributed.  There's a funnel shape to the residuals.  
+
+lm_init_log <- lm(log_ht ~ log_DBH * Genus, data = ripdata_ss)
+anova(lm_init_log)
+summary(lm_init_log)
+ 
+plot(residuals(lm_init_log) ~ predict(lm_init_log), xlab = "Predicted Values", ylab = "Residuals")
+#The residual plot is much less funnel shaped.
+
+par(mfrow = c(2,2))
+plot(lm_init_log)
+par(mfrow = c(1,1))
+
+all_val[2,"R2"] <- summary(lm_init_log)$r.squared
+all_val[2,"AIC"] <- AIC(lm_init_log)
+
+al_lm1 <- lm(log_ht ~ log_DBH * Genus + tavg_Aug, data = ripdata_ss)
+
+anova(al_lm1)
+all_val[3,"R2"] <- summary(al_lm1)$r.squared
+all_val[3,"AIC"] <- AIC(al_lm1)
+
+al_lm2 <- lm(log_ht ~ log_DBH * Genus + elevation, data = ripdata_ss)
+
+anova(al_lm2)
+all_val[4,"R2"] <- summary(al_lm2)$r.squared
+all_val[4,"AIC"] <- AIC(al_lm2)
+
+al_lm3 <- lm(log_ht ~ log_DBH * Genus + Latitude, data = ripdata_ss)
+
+anova(al_lm3)
+all_val[5,"R2"] <- summary(al_lm3)$r.squared
+all_val[5,"AIC"] <- AIC(al_lm3)
+
+al_lm4 <- lm(log_ht ~ log_DBH * Genus + precp_Aug, data = ripdata_ss)
+
+anova(al_lm4)
+all_val[6,"R2"] <- summary(al_lm4)$r.squared
+all_val[6,"AIC"] <- AIC(al_lm4)
+
+rownames(all_val) <- c("Initial", "Log_Initial", "tavg_Aug", "Elevation", "Latitude", "precp_Aug", "All_values")
+
+#Multiple parameters may increase model fit
+al_lm5 <- lm(log_ht ~ log_DBH * Genus + precp_Aug + Latitude, data = ripdata_ss)
+
+anova(al_lm5)
+all_val[7,"R2"] <- summary(al_lm5)$r.squared
+all_val[7,"AIC"] <- AIC(al_lm5)
+
+all_val
+
+#Including multiple parameters increases the explained variance, but not by much.  It appears that including elevation as a parameter would be sufficient. Elevation would make sense as well: elevation can be a proxy for climate.  A simple search for "elevation gradient" on Google Scholar will turn up hundreds of papers regarding the geomorphology of plant species that differs based on elevation.  
+
 ```
 
 ```{r Step 3}
+new_data <- read.csv("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/Data/new_data.csv", stringsAsFactors=FALSE)
+
+with(ripdata_ss,plot(log_DBH, log_ht))
+
+lat2 <- new_data$Latitude
+lon2 <- new_data$Longitude
+xy2 <- cbind(lon2, lat2)
+new_data$elevation <- extract(r1, xy2)
+
+new_data$log_ht <- predict(al_lm2, newdata= new_data)
+new_data$Woody_ht_cm <- exp(new_data$log_ht)
+lines(lm.pred.y, col = "blue", lwd = 3)
+
+#This doesn't seem correct, but I'll go with it, for now.
+
+agtv <- 705 * (.0000334750*(new_data$Woody_DBH_cm ^2.33631) * (new_data$Woody_ht_cm ^.74872))
+
+#95% confidence intervals can be obtained via the "levels" option of the predict function.  By generating those values, we could use the above formula to give a range of values from the 95% confidence interval.
 ```
-Results:  
+Results:
+Our linear model required the log transformation of DBH and height to generate a normal distruibution of each.  We did not transform other variables because we could not discuver an adequate transformation.  All attempted transformations did not result in normal distributions: `r tru` `r nw`
+We determined that lm(log_ht ~ log_DBH * Genus + elevation) resulted in the most accurate model, though it should be furthur refined.
+
+`r all_val`
+
+
+Based on the linear model using elevation, genus, and the interaction of genus and diameter at breast height, we predict the total carbon stock of trees at the new site to be `r sum(agtv) * .5` Mg per hectare.  
 
 Discussion:  
+Our chosen parameter, elevation, is a fitting varible to complete our model.  Not only did a comparison of AIC (3016.758) and r.squared (.6705130) show that this was the best combination of any parameter, but the literature supports the use of elevation as a proxy for climatic differences (Körner 2007, Malhi 2010, Whittaker 1975).  A simple search for "elevation gradient" on Google Scholar will turn up hundreds of papers regarding the geomorphology of plant species that differs based on elevation.  
+However, our model only explained 67% of the variation.  This is not enough to accurately generate predictions.  It is possible that because a zero intercept was not forced or included that our estimates underestimate carbon stocks.
+
 
 Limitations:
 We do not include longitude in our analysis because elevation's in California change over east-west rather than north-south
 
 Citations:  
+
 H. Wickham. ggplot2: Elegant Graphics for Data Analysis.
   Springer-Verlag New York, 2009.
 
 H. Wickham. Reshaping data with the reshape package. Journal of
   Statistical Software, 21(12), 2007.
+  
+Körner, Christian. "The use of ‘altitude’in ecological research." Trends in ecology & evolution 22.11 (2007): 569-574.  
+
+Malhi, Yadvinder, et al. "Introduction: elevation gradients in the tropics: laboratories for ecosystem ecology and global change research." Global Change Biology 16.12 (2010): 3171-3175.
   
 R Core Team (2015). R: A language and environment for statistical
   computing. R Foundation for Statistical Computing, Vienna, Austria.
@@ -99,4 +277,6 @@ Robert J. Hijmans (2015). raster: Geographic Data Analysis and
 Venables, W. N. & Ripley, B. D. (2002) Modern Applied
   Statistics with S. Fourth Edition. Springer, New York. ISBN
   0-387-95457-0
+  
+Whittaker, Robert H., and William A. Niering. "Vegetation of the Santa Catalina Mountains, Arizona. V. Biomass, production, and diversity along the elevation gradient." Ecology (1975): 771-790.
   
