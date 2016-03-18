@@ -1,6 +1,6 @@
 ---
 title: "Lab5"
-output: html_document
+output: word_document
 ---
 
 Joseph Crockett
@@ -41,18 +41,18 @@ The data are tree measurements from 4 riparian project areas in Northern Califor
 Code: 
 ```{r Data}
 # Load cleaned tree data and use raster and readGDAL to load DEM, precip_8, and tmean_8.
-load("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/Data/rd_lab3.rda")
+load("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/Lab-1/Data/rd_lab3.rda")
 ProjLoc <- aggregate(cbind(Longitude,Latitude) ~ ProjCode,
 data=ripdata_ss, mean)
 
-gdal_grid2 = readGDAL("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/Data/precip_8.tif")
+gdal_grid2 = readGDAL("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/Lab-1/Data/precip_8.tif")
 
 r2 = raster(gdal_grid2)
 
-gdal_grid1 = readGDAL("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/Data/DEM.tif")
+gdal_grid1 = readGDAL("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/Lab-1/Data/DEM.tif")
 r1 = raster(gdal_grid1)
 
-gdal_grid3 = readGDAL("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/Data/tmean_8.tif")
+gdal_grid3 = readGDAL("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/Lab-1/Data/tmean_8.tif")
 
 r3 = raster(gdal_grid3)
 
@@ -95,12 +95,12 @@ ripdata_ss$tavg_Aug <- extract(r3, xy)
 describe(ripdata_ss) #pysch package
 #Note: elevation, dbh, height, and precp are skewed right, while tavg is slightly skewed left.  SD and Mean seem to scale together.  A log transform worked well in the past, but perhaps a boxcox transformation would work as well.
 par(mfrow = c(2,3))
-boxcox(ripdata_ss$Woody_Height_cm)
 boxcox(lm(Woody_Height_cm ~ precp_Aug, data = ripdata_ss), seq(0,1,0.1))
 boxcox(lm(Woody_Height_cm ~ Latitude, data = ripdata_ss))
 boxcox(lm(Woody_Height_cm ~ Woody_DBH_cm, data = ripdata_ss))
 boxcox(lm(Woody_Height_cm ~ Woody_DBH_cm, data = ripdata_ss))
 boxcox(lm(Woody_Height_cm ~ Woody_DBH_cm, data = ripdata_ss))
+par(mfrow = c(1,1))
 
 prg <- stack(select(ripdata_ss, elevation, precp_Aug, tavg_Aug, Latitude, Woody_DBH_cm, Woody_Height_cm))
 
@@ -210,7 +210,7 @@ all_val
 ```
 
 ```{r Step 3}
-new_data <- read.csv("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/ES_207_Lab Repository/Data/new_data.csv", stringsAsFactors=FALSE)
+new_data <- read.csv("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/Lab-1/Data/new_data.csv", stringsAsFactors=FALSE)
 
 with(ripdata_ss,plot(log_DBH, log_ht))
 
@@ -218,10 +218,10 @@ lat2 <- new_data$Latitude
 lon2 <- new_data$Longitude
 xy2 <- cbind(lon2, lat2)
 new_data$elevation <- extract(r1, xy2)
-
+new_data$log_DBH <- log(new_data$Woody_DBH_cm)
 new_data$log_ht <- predict(al_lm2, newdata= new_data)
 new_data$Woody_ht_cm <- exp(new_data$log_ht)
-lines(lm.pred.y, col = "blue", lwd = 3)
+lines(new_data$Woody_ht_cm, col = "blue", lwd = 3)
 
 #This doesn't seem correct, but I'll go with it, for now.
 
@@ -230,10 +230,19 @@ agtv <- 705 * (.0000334750*(new_data$Woody_DBH_cm ^2.33631) * (new_data$Woody_ht
 #95% confidence intervals can be obtained via the "levels" option of the predict function.  By generating those values, we could use the above formula to give a range of values from the 95% confidence interval.
 ```
 Results:
-Our linear model required the log transformation of DBH and height to generate a normal distruibution of each.  We did not transform other variables because we could not discuver an adequate transformation.  All attempted transformations did not result in normal distributions: `r tru` `r nw`
+Our linear model required the log transformation of DBH and height to generate a normal distruibution of each.  We did not transform other variables because we could not discuver an adequate transformation.  All attempted transformations did not result in normal distributions: 
+```{r} 
+tru
+``` 
+
+```{r} 
+nw
+```
 We determined that lm(log_ht ~ log_DBH * Genus + elevation) resulted in the most accurate model, though it should be furthur refined.
 
-`r all_val`
+```{r}
+all_val
+```
 
 
 Based on the linear model using elevation, genus, and the interaction of genus and diameter at breast height, we predict the total carbon stock of trees at the new site to be `r sum(agtv) * .5` Mg per hectare.  
