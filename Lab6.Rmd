@@ -15,8 +15,9 @@ knitr::opts_chunk$set(fig.width = 12, fig.height = 8, warning = FALSE, message =
 #check for needed packages, install if needed, require if not
 ndpkg <- function(p){
  ifelse(is.element(p,installed.packages()[,1]),require(p,character.only = T), install.packages(p, dep = T))
+  install.packages(p, dep = T)
 }
-sapply(c("raster", "rgdal","HH", "ggplot2", "reshape", "gridExtra", "dplyr", "psych","car","MASS"), ndpkg)
+sapply(c("foreign"), ndpkg)
 
 ```
 Joseph Crockett 
