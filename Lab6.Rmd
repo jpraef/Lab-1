@@ -28,6 +28,11 @@ Homework Assignment 6
 Objective Statement:  
 Methods: 
 Data:  
+```{r Data}
+read.dbf()
+```
+
+
 Code: 
 Results:  
 Discussion:  
