@@ -18,18 +18,100 @@ ndpkg <- function(p){
    {install.packages(p, dep = T)}
   require(p,character.only = T)
 }
-sapply(c("foreign"), ndpkg)
+sapply(c("foreign", "ggplot2", "reshape", "raster", "rgdal","dplyr","gridExtra"), ndpkg)
+
+#EDA function
+CV1 <- function(x){
+  print((sd(x)/mean(x))*100)
+}
 
 ```
 
 
 Objective Statement:  
+
+The multitude of services that meadows provide incure special challenges to land managers.  Meadows capture sediment, reduce peak water flows, provide habitat, and have societal and cultural significance.  To guide the decisions of land managers, the US Forest service developed fourteen meadow types based on hydrological and geomorphological characteristics.  We will use
+
 Methods: 
+All analysis was conducted in RStudio Version 0.99.891 using R Version 3.2.3 "Wooden Christmas Tree". After removing rows without a corresponding hydogeomorphic type from a the provided Sierra Nevadas meadow polygon layer compiled by Joshua Viers, we further cleaned the dataset by renaming trucated attributes.
+  
 Data:  
 ```{r Data}
-read.dbf()
+snmmpc <- read.dbf("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/Lab-1/Data/Sierra_Nevada_MultiSource_Meadow_Polygons_Compilation_v1.dbf")
+```
+  
+Code:  
+```{r Step 1: Clean Data}
+#Adding ! before a function such as is.na reverses the function; i.e is.na asks whether a value is NA, while !is.na asks whether a value is not NA
+summary(snmmpc)
+# HGM_TYPE has 16601 NA values
+
+mdwhgm <- snmmpc[!is.na(snmmpc[,"HGM_TYPE"]),] #create new data.frame without NA hgm rows
+summary(mdwhgm)
+
+#Important variables to note from the GTR seem to be:  edge.compl, comp_name, Kf, clayTot_r, catchment_area, elev_mean, elev_range,flow_slope, lat, lon, veg_majority
+
+mdwhgm$area_sqkm <- mdwhgm[,"Shape_Area"]/1000000 #m2 to k2
+mdwhgm$catch_sqkm <- mdwhgm[,"CATCHMENT_"]/1000000 #m2 to k2
+mdwhgm$elev_m <- mdwhgm[,"ELEV_MEAN"] #m
+mdwhgm$elev_r <- mdwhgm[,"ELEV_RANGE"] #m
+mdwhgm$lat <- mdwhgm[,"LAT_DD"]#decimal degrees
+mdwhgm$lon <- mdwhgm[,"LONG_DD"]#decimal degrees
+mdwhgm$slope_pct <- mdwhgm[,"FLOW_SLOPE"]
+mdwhgm$edge_comp <- mdwhgm[,"EDGE_COMPL"]
+mdwhgm$clay <- mdwhgm[,"ClayTot_r"]
+mdwhgm$soil_kf <- mdwhgm[,"Kf"]
+mdwhgm$veg_maj <- mdwhgm[,"VEG_MAJORI"]
+
+#EDA
+summary(mdwhgm)
+sapply(mdwhgm[,29:38],sd) #standard deviation
+sapply(mdwhgm[,29:38],function(x) ((sd(x)/mean(x))*100) ) #Coefficient of Variation
+#Several variables have maximum values that are orders of magitude greater than the third quarter values: area_sqkm, catch_sqkm, elev_r and to lesser extent, clay, and edge_comp. The coefficient of variance calculations show that though the sd of mean elevation is pretty large, area_sqkm, catch_sqkm, elev_r, and slope_pct have the most variance of the variables. 
+
+#distributions
+d <- melt(mdwhgm[,29:38])
+d_g <- ggplot(d, aes(x = value)) + facet_wrap(~variable, scales = "free_x") + geom_histogram()
+d_g
+pairs(mdwhgm[,29:38], col = mdwhgm$HGM_TYPE)
+
+#Histograms of the ten identified variables show mostly right skewed distributions, though mean elevation, latitude, and longitude appear nearly normal.  
+
+#The scatterplots reveal that longitude and latitude have a strong negative correlation, clay and soil_kf have a moderate positive correlation, latitude and mean elevation have a weak negative correlation, and longitude and mean elevation have a weak positive correlation.
+rel_cols <-colnames(mdwhgm[,29:38]) #list of variables
 ```
 
+```{r Step 2: Clustering Output}
+
+#Hierarchical clustering, first finding euclidean distance (staight-line)
+md_dist <- dist(x = mdwhgm[,rel_cols], method = "euclidean")
+md_hier <- hclust(md_dist, method = "ward.D") #ward.D finds compact, spherical clusters
+plot(md_hier)
+rect.hclust(md_hier, k = 6)
+
+mdwhgm$hc6 <- as.factor(cutree(md_hier, k = 6))
+
+#K-means clustering
+md_km6 <- kmeans(mdwhgm[,rel_cols],centers= 6)
+mdwhgm$km6 <- as.factor(md_km6$cluster)
+
+#compare results of each
+table(mdwhgm$hc6, mdwhgm$km6)
+#It appears that the kmeans clustering and the hierarchial clustering agree on few classifications: groups 4, 5, and 6 saw some agreements, but not many. The following plot displays this mismatch.  Agreements occur primarily between the 40 and 42 parallels.
+
+gdal_grid1 = readGDAL("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/Lab-1/Data/DEM.tif")
+r1 = raster(gdal_grid1)
+
+r1_p <- data.frame(rasterToPoints(r1))
+colnames(r1_p) <- c("Longitude", "Latitude", "DEM")
+r1_pf <- filter(r1_p, Longitude >= min(mdwhgm$lon) & Longitude <= max(mdwhgm$lon) & Latitude >= min(mdwhgm$lat) & Latitude <= max(mdwhgm$lat))
+
+r1_pp<- ggplot(data = r1_pf, aes(x = Longitude, y = Latitude)) + geom_raster(aes(fill = DEM)) + geom_point(data = mdwhgm, aes(x = lon, y = lat, color = hc6), size = 3, shape = 4) + theme_minimal() + coord_equal() + scale_fill_gradient("DEM (ft)", low = "black", high = "white",limits = c(-90, 4000))
+
+r1_pp2<- ggplot(data = r1_pf, aes(x = Longitude, y = Latitude)) + geom_raster(aes(fill = DEM)) + geom_point(data = mdwhgm, aes(x = lon, y = lat, color = km6), size = 3, shape = 4) + theme_minimal() + coord_equal() + scale_fill_gradient("DEM (ft)", low = "black", high = "white",limits = c(-90, 4000))
+
+grid.arrange(r1_pp, r1_pp2, ncol = 2)
+ 
 
 Code: 
 Results:  
