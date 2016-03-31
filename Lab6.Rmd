@@ -5,25 +5,23 @@ output: html_document
 
 Joseph Crockett
 ES 207: Environmental Data Analysis
-March 1, 2016
+March 29th, 2016
 Homework Assignment 6
 
 
 ```{r global_options, include = FALSE}
 knitr::opts_chunk$set(fig.width = 12, fig.height = 8, warning = FALSE, message = FALSE)
 
-#check for needed packages, install if needed, require if not
+#check for needed packages, install if needed, then adds to environment
 ndpkg <- function(p){
- ifelse(is.element(p,installed.packages()[,1]),require(p,character.only = T), install.packages(p, dep = T))
-  install.packages(p, dep = T)
+ if(!is.element(p,installed.packages()[,1]))
+   {install.packages(p, dep = T)}
+  require(p,character.only = T)
 }
 sapply(c("foreign"), ndpkg)
 
 ```
-Joseph Crockett 
-ES 207: Environmental Data Analysis  
-March 14th 2016  
-Homework Assignment 6  
+
 
 Objective Statement:  
 Methods: 
