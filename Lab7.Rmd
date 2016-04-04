@@ -29,8 +29,14 @@ CV1 <- function(x){
 
 
 Objective Statement:   
+Purposeful flooding of the Cosumnes River floodplain could stimulate localized recharge of the groundwater aquifer and spur fish populations.  However, the expense may not be worth the investment if flooding does not occure often enough. We will examine the discharge levels at the USGS gaging station at Michigan Bar to determine the percentage of years that discharges >= 800 cubic feet per second occur 100 days or more.  Groundwater aquifers will benefit if floods occur in 50% of years. 
 Methods:  
+Our first goal is to gather data from the California Data Exchange Center with a unique function that will extract from a query URL.  We will next remove leap days and examine monthly autocorrelation,  including total, mean, and maximum discharge by month.  The number of flood events (days during which average discharge equals or exceeds 800 cfs) per water year will finally be calculated
+
 Data:  
+We will retrive historical river conditions at Michigan Bar from the California Data Exchange Center for the period x to y
+```{r Data}
+
 Code: 
 ```{r Step 1}
 # The provided function getCDEC encounters problems when the date format "m/d/Y" is used: csv files will not be written with the / symbol.  The fixed function, also provided, corrects this with the addition of "as.character(strptime(...))" on lines 53 and 54.  An alternative to this would be to use the function "format" to rearrange the start and end times to "m-d-Y" regardless of the input format.
