@@ -58,20 +58,39 @@ get.dailyUSGS <- function(site, sensor, start, end){
   
 }
 
+```
+
+```{r Step 2}
 get.dailyUSGS("11335000", "00060", "10/01/1907", "09/30/2015")
 
 water_dat <- daily_sf
 water_dat <- droplevels(water_dat[-1,]) #remove the first row
 colnames(water_dat) [4:5] <- c("discharge_cfs","dat_qvalue") #rename the last two columns
 
-water_dat[,"datetime"] <- as.POSIXct(water_dat[,"datetime"], tz = "PST") #convert datetime into POSIXct format, with timezone PST.
+water_dat[,"datetime"] <- as.POSIXct(water_dat[,"datetime"], tz = "America/Los_Angeles") #convert datetime into POSIXct format, with timezone PST.
 
 water_dat[,"discharge_cfs"] <- as.double(as.character(water_dat[,"discharge_cfs"])) #convert discharge cfs to numeric(double format)
 
-water_dat[,"discharge_afd"] <- 
+#From the Nevada division of water resources, 1 cfs for 24 hours = 1.9835 Acre-Feet
+water_dat[,"discharge_afd"] <- 1.98347109902 * water_dat[,"discharge_cfs"]
 
+```
 
+```{r Step 3}
+#Add year, month, and day columns, including water year and water month columns
 
+#Extracting year, month, and day values from datetime column
+water_dat[,"year"]<-as.numeric(format(water_dat[,"datetime"], format = "%Y"))  
+water_dat[,"month"] <-as.numeric(format(water_dat[,"datetime"], format = "%m"))
+water_dat[,"day"] <- as.numeric(format(water_dat[,"datetime"], format = "%d"))
+
+#water years start October 1 and end september 30, thus for calender months >9, we can add 1 to the year because it will be in the next year. We also reorder months so that october = 1 and september =12
+water_dat[,"water_year"] <- ifelse(water_dat[,"month"] > 9, water_dat[,"year"] + 1, water_dat[,"year"])
+water_dat[,"water_month"] <- ifelse(water_dat[,"month"] > 9, water_dat[,"month"] - 9, water_dat[,"month"] - 3)
+
+#removing leap days with the filter function in dplyr
+water_dat <- filter(water_dat, month  != 2 & day !=29) 
+```
 Results:  
 Discussion:  
 Limitation:  
