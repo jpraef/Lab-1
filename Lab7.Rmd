@@ -34,13 +34,29 @@ Methods:
 Our first goal is to gather data from the California Data Exchange Center with a unique function that will extract from a query URL.  We will next remove leap days and examine monthly autocorrelation,  including total, mean, and maximum discharge by month.  The number of flood events (days during which average discharge equals or exceeds 800 cfs) per water year will finally be calculated
 
 Data:  
-We will retrive historical river conditions at Michigan Bar from the California Data Exchange Center for the period x to y
+We will retrive historical river conditions at Michigan Bar from the California Data Exchange Center for the period 1908 to 2015
 ```{r Data}
 
 Code: 
 ```{r Step 1}
 # The provided function getCDEC encounters problems when the date format "m/d/Y" is used: csv files will not be written with the / symbol.  The fixed function, also provided, corrects this with the addition of "as.character(strptime(...))" on lines 53 and 54.  An alternative to this would be to use the function "format" to rearrange the start and end times to "m-d-Y" regardless of the input format.
 
+#Extracting data from URL
+get.dailyUSGS <- function(site, sensor, start, end){
+  #site = site number (11335000 for Michigan Bar)
+  #sensor = sensor parameter (00060 for discharge)
+  #start and end values can be in mm-dd-yyyy or mm/dd/yyyy forms
+  start <- format(as.Date(start, "%m/%d/%Y"),"%Y-%m-%d") #format date in form m - d - y for URL
+  print(start)
+  end <- format(as.Date(end,"%m/%d/%Y"), "%Y-%m-%d")
+  print(end)
+  print(site)
+  print(sensor)
+  data <- read.table(paste0("http://waterdata.usgs.gov/nwis/dv?cb_",sensor,"=on&format=rdb&site_no=",site,"&referred_mo dule=sw&period=&begin_date=",start,"&end_date=",end))
+  
+  assign("daily_sf", data, envir = .GlobalEnv) #assign to the global environment
+  
+}
 
 Results:  
 Discussion:  
