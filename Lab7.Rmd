@@ -52,7 +52,8 @@ get.dailyUSGS <- function(site, sensor, start, end){
   print(end)
   print(site)
   print(sensor)
-  data <- read.table(paste("http://waterdata.usgs.gov/nwis/dv?cb_",sensor,"=on&format=rdb&site_no=",site,"&referred_mo dule=sw&period=&begin_date=",start,"&end_date=",end, sep = ""), header = T) #header = T removes one of the two unnecessary rows
+  print(paste0("http://waterdata.usgs.gov/nwis/dv?cb_",sensor,"=on&format=rdb&site_no=",site,"&referred_mo dule=sw&period=&begin_date=",start,"&end_date=",end))
+  data <- read.table(paste0("http://waterdata.usgs.gov/nwis/dv?cb_",sensor,"=on&format=rdb&site_no=",site,"&referred_module=sw&period=&begin_date=",start,"&end_date=",end), header = T) #header = T removes one of the two unnecessary rows
   
   assign("daily_sf", data, envir = .GlobalEnv) #assign to the global environment
   
@@ -61,7 +62,7 @@ get.dailyUSGS <- function(site, sensor, start, end){
 ```
 
 ```{r Step 2}
-get.dailyUSGS("11335000", "00060", "10/02/1907", "09/30/2015")
+get.dailyUSGS("11335000", "00060", "10/01/1907", "09/30/2015")
 
 water_dat <- daily_sf
 water_dat <- droplevels(water_dat[-1,]) #remove the first row
@@ -88,18 +89,44 @@ water_dat[,"day"] <- as.numeric(format(water_dat[,"datetime"], format = "%d"))
 water_dat[,"water_year"] <- ifelse(water_dat[,"month"] > 9, water_dat[,"year"] + 1, water_dat[,"year"])
 water_dat[,"water_month"] <- ifelse(water_dat[,"month"] > 9, water_dat[,"month"] - 9, water_dat[,"month"] + 3)
 
-#removing leap days with the filter function in dplyr
-water_dat <- filter(water_dat, month  != 2 & day !=29) 
+#removing leap days
+water_dat <- water_dat[!(water_dat[,"month"] == 2 & water_dat[,"day"] == 29),]
 
-#The function ts will create a time series object, ts, with attributes that make time series analysis easier, such as aligning time axes. Yearly totals will have seasonal variation, so the following functions aggregate by month
+#The function ts will create a time series object, ts, with attributes that make time series analysis easier, such as aligning time axes. Yearly totals will have seasonal variation, so the following functions aggregate by month/year
 
 
-water_dat_mon_sum <- ts(aggregate(discharge_afd ~ water_month + water_year, data = water_dat, FUN = sum), frequency = 12)
+water_dat_mon_sum <- ts(as.vector(aggregate(discharge_afd ~ water_month + water_year, data = water_dat, FUN = sum)), frequency = 12)
 
-water_dat_mon_mean <- ts(aggregate(discharge_afd ~ water_month + water_year, data = water_dat, FUN = mean), frequency = 12)
+#
 
-water_dat_mon_max <- ts(aggregate(discharge_afd ~ water_month + water_year, data = water_dat, FUN = max), frequency = 12)
+water_dat_mon_mean <- ts(as.vector(aggregate(discharge_afd ~ water_month + water_year, data = water_dat, FUN = mean)), frequency = 12)
+
+water_dat_mon_max <- ts(as.vector(aggregate(discharge_afd ~ water_month + water_year, data = water_dat, FUN = max)), frequency = 12)
+
+
+
 ```
+
+```{r Step 4}
+#Calculating flood events
+#Flood days are defined as days in which discharges in excess of 800 cfs occur.
+
+
+water_dat[,"flood"] <- ifelse(water_dat[,"discharge_cfs"] >= 800, 1, 0)
+
+ggplot(water_dat, aes(x = datetime, y = discharge_cfs)) + geom_line() + geom_hline(yintercept = 800, col = "red", alpha = 1/2) + theme_minimal()
+
+water_dat_flood <- aggregate(flood ~ water_year, data = water_dat, FUN = sum)
+
+water_dat_flood$ab <- ifelse(water_dat_flood$flood >= 100, "Flood Year" , "Not Flood Year")
+
+sum(ifelse(water_dat_flood$ab == "Flood Year", 1, 0)/nrow(water_dat_flood))
+#[1] 0.3055556
+
+ggplot(water_dat_flood, aes(x = water_year, y = flood, fill = ab)) + geom_bar(stat = "identity") + geom_hline(yintercept = 100, color = "orange", alpha = 1/2) + theme_minimal() + theme(legend.title = element_blank(), legend.position = "bottom")
+
+
+
 Results:  
 Discussion:  
 Limitation:  
