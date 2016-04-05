@@ -35,7 +35,7 @@ Our first goal is to gather data from the California Data Exchange Center with a
 
 Data:  
 We will retrive historical river conditions at Michigan Bar from the California Data Exchange Center for the period 1908 to 2015
-```{r Data}
+
 
 Code: 
 ```{r Step 1}
@@ -52,7 +52,7 @@ get.dailyUSGS <- function(site, sensor, start, end){
   print(end)
   print(site)
   print(sensor)
-  data <- read.table(paste0("http://waterdata.usgs.gov/nwis/dv?cb_",sensor,"=on&format=rdb&site_no=",site,"&referred_mo dule=sw&period=&begin_date=",start,"&end_date=",end), header = T) #header = T removes one of the two unnecessary rows
+  data <- read.table(paste("http://waterdata.usgs.gov/nwis/dv?cb_",sensor,"=on&format=rdb&site_no=",site,"&referred_mo dule=sw&period=&begin_date=",start,"&end_date=",end, sep = ""), header = T) #header = T removes one of the two unnecessary rows
   
   assign("daily_sf", data, envir = .GlobalEnv) #assign to the global environment
   
@@ -61,7 +61,7 @@ get.dailyUSGS <- function(site, sensor, start, end){
 ```
 
 ```{r Step 2}
-get.dailyUSGS("11335000", "00060", "10/01/1907", "09/30/2015")
+get.dailyUSGS("11335000", "00060", "10/02/1907", "09/30/2015")
 
 water_dat <- daily_sf
 water_dat <- droplevels(water_dat[-1,]) #remove the first row
@@ -86,10 +86,19 @@ water_dat[,"day"] <- as.numeric(format(water_dat[,"datetime"], format = "%d"))
 
 #water years start October 1 and end september 30, thus for calender months >9, we can add 1 to the year because it will be in the next year. We also reorder months so that october = 1 and september =12
 water_dat[,"water_year"] <- ifelse(water_dat[,"month"] > 9, water_dat[,"year"] + 1, water_dat[,"year"])
-water_dat[,"water_month"] <- ifelse(water_dat[,"month"] > 9, water_dat[,"month"] - 9, water_dat[,"month"] - 3)
+water_dat[,"water_month"] <- ifelse(water_dat[,"month"] > 9, water_dat[,"month"] - 9, water_dat[,"month"] + 3)
 
 #removing leap days with the filter function in dplyr
 water_dat <- filter(water_dat, month  != 2 & day !=29) 
+
+#The function ts will create a time series object, ts, with attributes that make time series analysis easier, such as aligning time axes. Yearly totals will have seasonal variation, so the following functions aggregate by month
+
+
+water_dat_mon_sum <- ts(aggregate(discharge_afd ~ water_month + water_year, data = water_dat, FUN = sum), frequency = 12)
+
+water_dat_mon_mean <- ts(aggregate(discharge_afd ~ water_month + water_year, data = water_dat, FUN = mean), frequency = 12)
+
+water_dat_mon_max <- ts(aggregate(discharge_afd ~ water_month + water_year, data = water_dat, FUN = max), frequency = 12)
 ```
 Results:  
 Discussion:  
