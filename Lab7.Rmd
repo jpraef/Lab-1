@@ -97,14 +97,31 @@ water_dat <- water_dat[!(water_dat[,"month"] == 2 & water_dat[,"day"] == 29),]
 
 water_dat_mon_sum <- ts(as.vector(aggregate(discharge_afd ~ water_month + water_year, data = water_dat, FUN = sum)), frequency = 12)
 
-#
-
 water_dat_mon_mean <- ts(as.vector(aggregate(discharge_afd ~ water_month + water_year, data = water_dat, FUN = mean)), frequency = 12)
 
 water_dat_mon_max <- ts(as.vector(aggregate(discharge_afd ~ water_month + water_year, data = water_dat, FUN = max)), frequency = 12)
 
+#Determining driest year, wettest year, and year with highest daily average discharge
+wat_yr_s <- aggregate(discharge_afd~water_year, data = water_dat, FUN = sum)
 
+which.min(wat_yr_s$discharge_afd) #will show the row number of the minimum year sum of discharge_afd
+#[1] 70
+wat_yr_s[70,] #1977
 
+which.max(wat_yr_s$discharge_afd) #similarly, the row number of the max value
+#[1] 76
+wat_yr_s[76,] #1983
+
+#Interesting that the minimum and the maximum discharge years occur within 10 years of each other
+
+wat_yr_av <- aggregate(discharge_afd~water_year, data = water_dat, FUN = mean)
+which.max(wat_yr_av$discharge_afd)
+
+#Autocorrelation functions of sum, mean, and max
+acf(water_dat_mon_sum[,"discharge_afd"])
+acf(water_dat_mon_mean[,"discharge_afd"])
+acf(water_dat_mon_max[,"discharge_afd"])
+#The pattern in the ACF indicates seasonality, especially considering that water year is being used..  Lags at approximately 6 months are negative (summer dry season to winter wet) and 1 year are positive (summer to summer or winter to winter).  Interestingly, the lags two years out are similar to one year away.
 ```
 
 ```{r Step 4}
