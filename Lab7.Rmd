@@ -114,8 +114,34 @@ wat_yr_s[76,] #1983
 
 #Interesting that the minimum and the maximum discharge years occur within 10 years of each other
 
-wat_yr_av <- aggregate(discharge_afd~water_year, data = water_dat, FUN = mean)
-which.max(wat_yr_av$discharge_afd)
+#The year with the highest daily average discharge: Is this the year in which the highest flood occured?
+
+which.max(water_dat$discharge_afd)
+#[1] 32579
+
+water_dat[32579,"datetime"]
+#[1] "1997-01-02 PST"
+
+#Plotting monthly hydrograph results for the above years: 1977, 1983, 1997
+
+d1 <- as.data.frame(water_dat_mon_max)
+d2 <- as.data.frame(water_dat_mon_sum)
+d3 <- as.data.frame(water_dat_mon_mean)
+
+#Max monthly discharge
+df_max <- melt(list(max_77 = filter(d1, water_year == 1977), max_83 = filter(d1, water_year == 1983), max_97 = filter(d1, water_year == 1997)), id.vars = c("water_year", "water_month"))
+
+ggplot(df_max, aes(x = as.factor(water_month), y = value, fill = as.factor(water_year))) + geom_bar(stat = "identity", position = "dodge") + theme_minimal() + labs(title = "Maximum monthly discharge, driest year, wettest year, and highest daily average", x = "Water Month", y = "Daily Discharge, AFD") + theme(legend.position = c(1,1), legend.justification = c(1,1)) + scale_fill_discrete(name = "Water Year")
+
+#Mean monthly discharge
+df_mean <- melt(list(mean_77 = filter(d2, water_year == 1977), mean_83 = filter(d2, water_year == 1983), mean_97 = filter(d2, water_year == 1997)), id.vars = c("water_year", "water_month"))
+
+ggplot(df_mean, aes(x = as.factor(water_month), y = value, fill = as.factor(water_year))) + geom_bar(stat = "identity", position = "dodge") + theme_minimal() + labs(title = "Mean monthly discharge per month, driest year, wettest year, and highest daily average", x = "Water Month", y = "Daily Discharge, AFD") + theme(legend.position = c(1,1), legend.justification = c(1,1)) + scale_fill_discrete(name = "Water Year")
+
+#total monthly discharge
+df_sum <- melt(list(sum_77 = filter(d3, water_year == 1977), sum_83 = filter(d3, water_year == 1983), sum_97 = filter(d3, water_year == 1997)), id.vars = c("water_year", "water_month"))
+
+ggplot(df_sum, aes(x = as.factor(water_month), y = value, fill = as.factor(water_year))) + geom_bar(stat = "identity", position = "dodge") + theme_minimal() + labs(title = "Total monthly discharge, driest year, wettest year, and highest daily average", x = "Water Month", y = "Daily Discharge, AFD") + theme(legend.position = c(1,1), legend.justification = c(1,1)) + scale_fill_discrete(name = "Water Year")
 
 #Autocorrelation functions of sum, mean, and max
 acf(water_dat_mon_sum[,"discharge_afd"])
