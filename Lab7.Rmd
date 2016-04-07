@@ -1,6 +1,6 @@
 ---
 title: "Lab7"
-output: html_document
+output: word_document
 ---
 
 Joseph Crockett  
@@ -30,11 +30,12 @@ CV1 <- function(x){
 
 Objective Statement:   
 Purposeful flooding of the Cosumnes River floodplain could stimulate localized recharge of the groundwater aquifer and spur fish populations.  However, the expense may not be worth the investment if flooding does not occure often enough. We will examine the discharge levels at the USGS gaging station at Michigan Bar to determine the percentage of years that discharges >= 800 cubic feet per second occur 100 days or more.  Groundwater aquifers will benefit if floods occur in 50% of years. 
+
 Methods:  
-Our first goal is to gather data from the California Data Exchange Center with a unique function that will extract from a query URL.  We will next remove leap days and examine monthly autocorrelation,  including total, mean, and maximum discharge by month.  The number of flood events (days during which average discharge equals or exceeds 800 cfs) per water year will finally be calculated
+Our first goal was to gather data from the California Data Exchange Center with a unique function that extracted streamflow data from a query URL.  We next removed leap days and examined monthly autocorrelation, and total, mean, and maximum discharge by month.  Finally, the number of flood events (days during which average discharge equals or exceeds 800 cfs) per water year were calculated.
 
 Data:  
-We will retrive historical river conditions at Michigan Bar from the California Data Exchange Center for the period 1908 to 2015
+USGS maintains streamflow records from water year 1908 to the present at approximately 1.5 million sites in the United States and associated commonwealths.  We used historical river conditions at Michigan Bar from the California Data Exchange Center for the period 1908 to 2015.  Data were converted from CFS to acre-foot / day for time-series analysis.
 
 
 Code: 
@@ -52,7 +53,7 @@ get.dailyUSGS <- function(site, sensor, start, end){
   print(end)
   print(site)
   print(sensor)
-  print(paste0("http://waterdata.usgs.gov/nwis/dv?cb_",sensor,"=on&format=rdb&site_no=",site,"&referred_mo dule=sw&period=&begin_date=",start,"&end_date=",end))
+  print(paste0("http://waterdata.usgs.gov/nwis/dv?cb_",sensor,"=on&format=rdb&site_no=",site,"&referred_module=sw&period=&begin_date=",start,"&end_date=",end))
   data <- read.table(paste0("http://waterdata.usgs.gov/nwis/dv?cb_",sensor,"=on&format=rdb&site_no=",site,"&referred_module=sw&period=&begin_date=",start,"&end_date=",end), header = T) #header = T removes one of the two unnecessary rows
   
   assign("daily_sf", data, envir = .GlobalEnv) #assign to the global environment
@@ -149,15 +150,34 @@ acf(water_dat_mon_mean[,"discharge_afd"])
 acf(water_dat_mon_max[,"discharge_afd"])
 #The pattern in the ACF indicates seasonality, especially considering that water year is being used..  Lags at approximately 6 months are negative (summer dry season to winter wet) and 1 year are positive (summer to summer or winter to winter).  Interestingly, the lags two years out are similar to one year away.
 
-acf(water_dat_mon_sum[,"discharge_afd"]))
-acf(water_dat_mon_mean[,"discharge_afd"])
-acf(water_dat_mon_max[,"discharge_afd"])
+plot(stl(water_dat_mon_sum[,"discharge_afd"], s.window = "per"))
+plot(stl(water_dat_mon_mean[,"discharge_afd"], s.window = "per"))
+plot(stl(water_dat_mon_max[,"discharge_afd"], s.window = "per"))
+
+#Detrending the raw data reveals the seasonal structure swings by winter/summer.  We also observe that the magnitude of flood months is greater than any individual dry month, but the dry months outnumber the total wet months.
+
+#d1$log_discharge <- log10(d1$discharge_afd)
+#d1$log_discharge <- ifelse(d1$log_discharge == -Inf, NA, d1$log_discharge) # log10(0) = -Inf, which messes up acf and stl.  So I've replaced -Inf values with NA.
+#d2$log_discharge <- log10(d2$discharge_afd)
+#d2$log_discharge <- ifelse(d2$log_discharge == -Inf, NA, d2$log_discharge)
+#d3$log_discharge <- log10(d3$discharge_afd)
+#d3$log_discharge <- ifelse(d3$log_discharge == -Inf, NA, d3$log_discharge)
+
+#plot.new()
+#acf(d1$log_discharge, na.action = na.exclude)
+#acf(d2$log_discharge, na.action = na.exclude)
+#acf(d3$log_discharge, na.action = na.exclude)
+
+#plot.new()
+#plot(stl(as.ts(d1$log_discharge), s.window = "per", na.action = na.exclude))
+#plot(stl(water_dat_mon_sum[,"discharge_afd"], s.window = "per"))
+#plot(stl(water_dat_mon_sum[,"discharge_afd"], s.window = "per"))
+
 ```
 
 ```{r Step 4}
 #Calculating flood events
 #Flood days are defined as days in which discharges in excess of 800 cfs occur.
-
 
 water_dat[,"flood"] <- ifelse(water_dat[,"discharge_cfs"] >= 800, 1, 0)
 
@@ -170,10 +190,33 @@ water_dat_flood$ab <- ifelse(water_dat_flood$flood >= 100, "Flood Year" , "Not F
 sum(ifelse(water_dat_flood$ab == "Flood Year", 1, 0)/nrow(water_dat_flood))
 #[1] 0.3055556
 
-ggplot(water_dat_flood, aes(x = water_year, y = flood, fill = ab)) + geom_bar(stat = "identity") + geom_hline(yintercept = 100, color = "orange", alpha = 1/2) + theme_minimal() + theme(legend.title = element_blank(), legend.position = "bottom")
+
+water_dat_flood$ab3 <- ifelse(water_dat_flood$flood >= 60, "Flood Year" , "Not Flood Year")
+
+sum(ifelse(water_dat_flood$ab3 == "Flood Year", 1, 0)/nrow(water_dat_flood))
+#[1] 0.5185185
+
+water_dat[,"flood2"] <- ifelse(water_dat[,"discharge_cfs"] >= 550, 1, 0)
+
+water_dat_flood2 <- aggregate(flood2 ~ water_year, data = water_dat, FUN = sum)
+
+water_dat_flood2$ab <- ifelse(water_dat_flood2$flood2 >= 100, "Flood Year" , "Not Flood Year")
+
+sum(ifelse(water_dat_flood2$ab == "Flood Year", 1, 0)/nrow(water_dat_flood))
+#[1] 0.4907407
+
+ggplot(water_dat_flood, aes(x = water_year, y = flood, fill = ab)) + geom_bar(stat = "identity") + geom_hline(yintercept = 100, color = "orange", alpha = 1/2) + theme_minimal() + theme(legend.title = element_blank(), legend.position = "bottom") + geom_hline(yintercept = mean(water_dat_flood$flood), color = "blue", alpha = 1/2) + labs(title = "Flood years by # days.  100 day threshold (orange), and mean (blue)", x = "Water Year", y = "Number of Flood days")
 
 ```
 
-Results:  
-Discussion:  
-Limitation:  
+Results:
+As expected, streamflow exhibited yearly auto-correlation, in which a one year lag had positive autocorrelation and a 6 month lag had negative correlation.  Lags were similar 1 year, 2 year, and expected, 3 years away.  When seasonal trends were removed, the results reveal multi-year wet/dry cycles.  Beginning in approximately the 1990s, the wet/dry pattern changes relative to the previous century to longer periods of low stream flow with peaks of intense flooding.  Wet/dry cycles in the previous years followed a ragged sine curve with fewer extremes.  
+36% of water years had more than 100 days in which discharge equaled or exceeded 800 cfs. Visual inspection of flood years reveals that flood years cluster more starting in the 1970s compared to previous years.  Since 1975, ~ 3 clusters of multiple flood years occurred (2 or greater consecutive years of 100 days greater than 800 cfs).  These number of days within flood years also seems to be increasing.  
+Monthly decomposition of flood events show that discharge occurs primarily in the 4 – 6th months of the water year (January through March).  1997, the year with the largest daily average discharge, had its largest total, mean, and max discharge in January.  
+Discussion:
+The final analysis shows that the threshold of years needed to justify the creation of a floodplain has not been met.  To meet the 50% threshold, we would need to reduce the number of days a year to 60 or the discharge to 550 cfs.  
+The number of flood days within a flood year seem to be increasing, as does the time between wet years.  This could be due to extreme precipitation events within a longer drought period.  Interestingly, the wettest year, 1983 occurred just 6 years after the driest year.  Finally, extreme weather events are captured.  The 97 -98 El Nino is clearly noticeable as a massive flood spike.  In the monthly graphs, we see that 1997 also laid claim to the largest daily discharge, in January of that year.  The 2012 – 2015 drought appears as a period of low discharge rates, comparable to the 1930s.
+Future analysis may include trend analysis of high discharge days: whether the trend of isolated extreme flood years is in fact increasing may change criteria for floodplain construction.
+
+Limitations:
+There is an unanswered question of whether our chosen data period accurately depicts future flooding.  Earlier droughts, such as the 1930s Dustbowl, drew our final statistic down, but this might not be representable of current climate conditions.  A more in-depth analysis would include discharge forecasts and removal of outliers.  
