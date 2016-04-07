@@ -148,6 +148,10 @@ acf(water_dat_mon_sum[,"discharge_afd"])
 acf(water_dat_mon_mean[,"discharge_afd"])
 acf(water_dat_mon_max[,"discharge_afd"])
 #The pattern in the ACF indicates seasonality, especially considering that water year is being used..  Lags at approximately 6 months are negative (summer dry season to winter wet) and 1 year are positive (summer to summer or winter to winter).  Interestingly, the lags two years out are similar to one year away.
+
+acf(water_dat_mon_sum[,"discharge_afd"]))
+acf(water_dat_mon_mean[,"discharge_afd"])
+acf(water_dat_mon_max[,"discharge_afd"])
 ```
 
 ```{r Step 4}
@@ -168,7 +172,7 @@ sum(ifelse(water_dat_flood$ab == "Flood Year", 1, 0)/nrow(water_dat_flood))
 
 ggplot(water_dat_flood, aes(x = water_year, y = flood, fill = ab)) + geom_bar(stat = "identity") + geom_hline(yintercept = 100, color = "orange", alpha = 1/2) + theme_minimal() + theme(legend.title = element_blank(), legend.position = "bottom")
 
-
+```
 
 Results:  
 Discussion:  
