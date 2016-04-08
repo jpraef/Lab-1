@@ -92,6 +92,10 @@ water_dat[,"water_month"] <- ifelse(water_dat[,"month"] > 9, water_dat[,"month"]
 
 #removing leap days
 water_dat <- water_dat[!(water_dat[,"month"] == 2 & water_dat[,"day"] == 29),]
+summary(water_dat)
+# No negative values for discharge
+
+ggplot(water_dat, aes(discharge_cfs)) + geom_density()
 
 #The function ts will create a time series object, ts, with attributes that make time series analysis easier, such as aligning time axes. Yearly totals will have seasonal variation, so the following functions aggregate by month/year
 
@@ -156,22 +160,28 @@ plot(stl(water_dat_mon_max[,"discharge_afd"], s.window = "per"))
 
 #Detrending the raw data reveals the seasonal structure swings by winter/summer.  We also observe that the magnitude of flood months is greater than any individual dry month, but the dry months outnumber the total wet months.
 
-#d1$log_discharge <- log10(d1$discharge_afd)
-#d1$log_discharge <- ifelse(d1$log_discharge == -Inf, NA, d1$log_discharge) # log10(0) = -Inf, which messes up acf and stl.  So I've replaced -Inf values with NA.
-#d2$log_discharge <- log10(d2$discharge_afd)
-#d2$log_discharge <- ifelse(d2$log_discharge == -Inf, NA, d2$log_discharge)
-#d3$log_discharge <- log10(d3$discharge_afd)
-#d3$log_discharge <- ifelse(d3$log_discharge == -Inf, NA, d3$log_discharge)
 
-#plot.new()
-#acf(d1$log_discharge, na.action = na.exclude)
-#acf(d2$log_discharge, na.action = na.exclude)
-#acf(d3$log_discharge, na.action = na.exclude)
+#log10 values to normalize
+water_dat$log_discharge_afd <- ifelse(water_dat$discharge_afd <= 0, log10(1), log10(water_dat$discharge_afd)) #replacing 0 and negative values with 1 to remove inf values
 
-#plot.new()
-#plot(stl(as.ts(d1$log_discharge), s.window = "per", na.action = na.exclude))
-#plot(stl(water_dat_mon_sum[,"discharge_afd"], s.window = "per"))
-#plot(stl(water_dat_mon_sum[,"discharge_afd"], s.window = "per"))
+ggplot(water_dat, aes(log_discharge_afd)) + geom_density()
+#Normalish distribution achieved
+
+water_log_mon_sum <- ts(as.vector(aggregate(log_discharge_afd ~ water_month + water_year, data = water_dat, FUN = sum)), frequency = 12)
+
+water_log_mon_mean <- ts(as.vector(aggregate(log_discharge_afd ~ water_month + water_year, data = water_dat, FUN = mean)), frequency = 12)
+
+water_log_mon_max <- ts(as.vector(aggregate(log_discharge_afd ~ water_month + water_year, data = water_dat, FUN = max)), frequency = 12)
+
+acf(water_log_mon_sum[,"log_discharge_afd"])
+acf(water_log_mon_mean[,"log_discharge_afd"])
+acf(water_log_mon_max[,"log_discharge_afd"])
+
+plot(stl(water_log_mon_sum[,"log_discharge_afd"], s.window = "per"))
+plot(stl(water_log_mon_mean[,"log_discharge_afd"], s.window = "per"))
+plot(stl(water_log_mon_max[,"log_discharge_afd"], s.window = "per"))
+
+#The seasonal trend is still apparent, but what is more interesting is that the trend takes a steep dive in the last few years of the time series.
 
 ```
 
