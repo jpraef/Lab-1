@@ -17,12 +17,13 @@ ndpkg <- function(p){
    {install.packages(p, dep = T)}
   require(p,character.only = T)
 }
-sapply(c("foreign", "ggplot2", "reshape", "raster", "rgdal","dplyr","gridExtra"), ndpkg)
+sapply(c("akima", "ggplot2", "reshape2", "raster","gridExtra", "maptools"), ndpkg)
 
 #EDA function
 CV1 <- function(x){
   print((sd(x)/mean(x))*100)
 }
+
 
 ```
 
@@ -30,7 +31,88 @@ CV1 <- function(x){
 Objective Statement: 
 Methods:  
 Data:  
-Code: 
+Code:
+```{r Step 1}
+pt_shp <- readShapePoints("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/Lab-1/Data/ahearn_allobs/allobs.shp")
+
+head(pt_shp)
+summary(pt_shp) #Are x and y using cartesian coordinates?
+unique(pt_shp$DateTime_)
+
+#New dataframes for each date
+pt_shp_21605 <- subset(pt_shp, DateTime_ == "2005-02-16")
+#pt_shp_22805 <- subset(pt_shp, DateTime_ == "2005-02-28")
+#pt_shp_22305 <- subset(pt_shp, DateTime_ == "2005-02-23")
+#pt_shp_21805 <- subset(pt_shp, DateTime_ == "2005-02-18")
+pt_shp_21705 <- subset(pt_shp, DateTime_ == "2005-02-17")
+
+
+#Interpolating points into raster for each date.  x = long, y = lat, z = Chlorophyl
+r_21605 <- interp(x = pt_shp_21605$Longitude, y = pt_shp_21605$Latitude, z = pt_shp_21605$Chlorophyl, duplicate = "mean")
+r_21605_m <- data.frame(Chlorophyll = melt(r_21605$z)$value, x = rep(r_21605$x, each = 40), y = rep(r_21605$y, 40)) #melting into longform so that I can use ggplot
+
+r_21705 <- interp(x = pt_shp_21705$Longitude, y = pt_shp_21705$Latitude, z = pt_shp_21705$Chlorophyl, duplicate = "mean")
+r_21705_m <- data.frame(Chlorophyll = melt(r_21705$z)$value, x = rep(r_21705$x, each = 40), y = rep(r_21705$y, 40))
+
+#r_21805 <- interp(x = pt_shp_21805$Longitude, y = pt_shp_21805$Latitude, z = pt_shp_21805$Chlorophyl, duplicate = "mean")
+#r_21805_m <- data.frame(Chlorophyll = melt(r_21805$z)$value, x = rep(r_21805$x, each = 40), y = rep(r_21805$y, 40))
+
+#r_22305 <- interp(x = pt_shp_22305$Longitude, y = pt_shp_22305$Latitude, z = pt_shp_22305$Chlorophyl, duplicate = "mean")
+#r_22305_m <- data.frame(Chlorophyll = melt(r_22305$z)$value, x = rep(r_22305$x, each = 40), y = rep(r_22305$y, 40))
+
+#r_22805 <- interp(x = pt_shp_22805$Longitude, y = pt_shp_22805$Latitude, z = pt_shp_22805$Chlorophyl, duplicate = "mean")
+#r_22805_m <- data.frame(Chlorophyll = melt(r_22805$z)$value, x = rep(r_22805$x, each = 40), y = rep(r_22805$y, 40))
+
+#r_205 <- rbind(r_21605_m, r_21705_m, r_21805_m, r_22305_m, r_22805_m) #stack the five dates together
+#r_205$datetime <- rep(c("2/16/05", "2/17/05", "2/18/05", "2/23/05", "2/28/05"), each = 1600) #add a date-time marker so that a facet_grid can be used on the graph
+
+
+ggplot(r_21605_m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) + geom_raster() + stat_contour(color = "grey50", alpha = 1/5) + scale_fill_distiller(palette="Spectral", direction = 1, na.value="white")+ theme_minimal() 
+
+ggplot(r_21705_m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) + geom_raster() + stat_contour(color = "grey50", alpha = 1/5) + scale_fill_distiller(palette="Spectral", direction = 1, na.value="white")+ theme_minimal() 
+
+```
+
+```{r Step 2}
+#Perspective plots
+#For 2/16/05 and 2/17/05, rasters of temp, chloro, and DO:
+
+ch_16 <- interp(x = pt_shp_21605$Longitude, y = pt_shp_21605$Latitude, z = pt_shp_21605$Chlorophyl, duplicate = "mean")
+ch_16m <- data.frame(Chlorophyll = melt(ch_16$z)$value, x = rep(ch_16$x, each = 40), y = rep(ch_16$y, 40))
+t_16 <-interp(x = pt_shp_21605$Longitude, y = pt_shp_21605$Latitude, z = pt_shp_21605$Temp, duplicate = "mean")
+t_16m <- data.frame(Temperature = melt(t_16$z)$value, x = rep(t_16$x, each = 40), y = rep(t_16$y, 40))
+do_16 <- interp(x = pt_shp_21605$Longitude, y = pt_shp_21605$Latitude, z = pt_shp_21605$DO__, duplicate = "mean")
+do_16m <- data.frame(Dissolved_O2 = melt(do_16$z)$value, x = rep(do_16$x, each = 40), y = rep(do_16$y, 40))
+
+ch_17 <- interp(x = pt_shp_21705$Longitude, y = pt_shp_21705$Latitude, z = pt_shp_21705$Chlorophyl, duplicate = "mean")
+ch_17m <- data.frame(Chlorophyll = melt(ch_17$z)$value, x = rep(ch_17$x, each = 40), y = rep(ch_17$y, 40))
+t_17 <-interp(x = pt_shp_21705$Longitude, y = pt_shp_21705$Latitude, z = pt_shp_21705$Temp, duplicate = "mean")
+t_17m <- data.frame(Temperature = melt(t_17$z)$value, x = rep(t_17$x, each = 40), y = rep(t_17$y, 40))
+do_17 <- interp(x = pt_shp_21705$Longitude, y = pt_shp_21705$Latitude, z = pt_shp_21705$DO__, duplicate = "mean")
+do_17m <- data.frame(Dissolved_O2 = melt(do_17$z)$value, x = rep(do_17$x, each = 40), y = rep(do_17$y, 40))
+
+
+# image/contour plots, 2/16/07
+p1 <- ggplot(ch_16m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Spectral", direction = 1, na.value="white")+ theme_minimal() 
+p2 <- ggplot(t_16m, aes(x = x, y = y, z = Temperature, fill = Temperature)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Oranges", direction = 1, na.value="white")+ theme_minimal() 
+p3 <- ggplot(do_16m, aes(x = x, y = y, z = Dissolved_O2, fill = Dissolved_O2)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="BuPu", direction = 1, na.value="white")+ theme_minimal() 
+
+
+#Image and contour, 2/17/05
+p4 <- ggplot(ch_17m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Spectral", direction = 1, na.value="white")+ theme_minimal() 
+p5 <- ggplot(t_17m, aes(x = x, y = y, z = Temperature, fill = Temperature)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Oranges", direction = 1, na.value="white")+ theme_minimal() 
+p6 <- ggplot(do_17m, aes(x = x, y = y, z = Dissolved_O2, fill = Dissolved_O2)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="BuPu", direction = 1, na.value="white")+ theme_minimal() 
+
+
+
+persp(r_21605, theta = 30, phi = 45, col = "lightblue", zlab = "Chlorophyll", xlab = "Longitude", ylab = "Latitude")
+
+```
+
+```{r Step 3}
+
+```
+
 Results:  
 Discussion:  
 Limitations:  
