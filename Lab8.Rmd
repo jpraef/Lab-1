@@ -17,7 +17,7 @@ ndpkg <- function(p){
    {install.packages(p, dep = T)}
   require(p,character.only = T)
 }
-sapply(c("akima", "ggplot2", "reshape2", "raster","gridExtra", "maptools"), ndpkg)
+sapply(c("akima", "ggplot2", "reshape2", "raster","gridExtra", "maptools", "lattice", "RColorBrewer"), ndpkg)
 
 #EDA function
 CV1 <- function(x){
@@ -93,20 +93,41 @@ do_17m <- data.frame(Dissolved_O2 = melt(do_17$z)$value, x = rep(do_17$x, each =
 
 
 # image/contour plots, 2/16/07
-p1 <- ggplot(ch_16m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Spectral", direction = 1, na.value="white")+ theme_minimal() 
-p2 <- ggplot(t_16m, aes(x = x, y = y, z = Temperature, fill = Temperature)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Oranges", direction = 1, na.value="white")+ theme_minimal() 
-p3 <- ggplot(do_16m, aes(x = x, y = y, z = Dissolved_O2, fill = Dissolved_O2)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="BuPu", direction = 1, na.value="white")+ theme_minimal() 
+p1 <- ggplot(ch_16m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Spectral", direction = 1, na.value="white")+ theme_minimal() + theme(legend.title = element_text(size = 10), legend.justification=c(1,0), legend.position=c(1,0)) 
+p2 <- ggplot(t_16m, aes(x = x, y = y, z = Temperature, fill = Temperature)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Oranges", direction = 1, na.value="white")+ theme_minimal() + theme(legend.title = element_text(size = 10), legend.justification=c(1,0), legend.position=c(1,0)) 
+p3 <- ggplot(do_16m, aes(x = x, y = y, z = Dissolved_O2, fill = Dissolved_O2)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="BuPu", direction = 1, na.value="white")+ theme_minimal() + theme(legend.title = element_text(size = 10), legend.justification=c(1,0), legend.position=c(1,0)) 
+
+#getting the colors from ggplot to use in the perspective plots
+getPalette1 = colorRampPalette(brewer.pal(9, "Spectral"))
+getPalette2 = colorRampPalette(brewer.pal(9, "Oranges"))
+getPalette3 = colorRampPalette(brewer.pal(9, "BuPu"))
 
 
-#Image and contour, 2/17/05
-p4 <- ggplot(ch_17m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Spectral", direction = 1, na.value="white")+ theme_minimal() 
-p5 <- ggplot(t_17m, aes(x = x, y = y, z = Temperature, fill = Temperature)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Oranges", direction = 1, na.value="white")+ theme_minimal() 
-p6 <- ggplot(do_17m, aes(x = x, y = y, z = Dissolved_O2, fill = Dissolved_O2)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="BuPu", direction = 1, na.value="white")+ theme_minimal() 
+#perspective plots
+p4 <- wireframe(Chlorophyll ~ x*y, ch_16m, drape = T, aspect = c(61/87, 0.4), col.regions = (getPalette1)(100))
+p5 <- wireframe(Temperature ~ x*y, t_16m, drape = T, aspect = c(61/87, 0.4), col.regions =(getPalette2)(100))
+p6 <- wireframe(Dissolved_O2 ~ x*y, do_16m,drape = T, aspect = c(61/87, 0.4), col.regions =(getPalette3)(100))
+
+
+grid.arrange(p1,p2,p3,p4,p5,p6, nrow = 2, ncol = 3)
 
 
 
-persp(r_21605, theta = 30, phi = 45, col = "lightblue", zlab = "Chlorophyll", xlab = "Longitude", ylab = "Latitude")
 
+# image/contour plots, 2/17/07
+p7 <- ggplot(ch_17m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Spectral", direction = 1, na.value="white")+ theme_minimal() + theme(legend.title = element_text(size = 10), legend.justification=c(1,0), legend.position=c(1,0)) 
+p8 <- ggplot(t_17m, aes(x = x, y = y, z = Temperature, fill = Temperature)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Oranges", direction = 1, na.value="white")+ theme_minimal() + theme(legend.title = element_text(size = 10), legend.justification=c(1,0), legend.position=c(1,0)) 
+p9 <- ggplot(do_17m, aes(x = x, y = y, z = Dissolved_O2, fill = Dissolved_O2)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="BuPu", direction = 1, na.value="white")+ theme_minimal() + theme(legend.title = element_text(size = 10), legend.justification=c(1,0), legend.position=c(1,0)) 
+
+
+
+#perspective plots
+p10 <- wireframe(Chlorophyll ~ x*y, ch_17m, drape = T, aspect = c(61/87, 0.4), col.regions = (getPalette1)(100))
+p11 <- wireframe(Temperature ~ x*y, t_17m, drape = T, aspect = c(61/87, 0.4), col.regions = (getPalette2)(100))
+p12 <- wireframe(Dissolved_O2 ~ x*y, do_17m,drape = T, aspect = c(61/87, 0.4), col.regions = (getPalette3)(100))
+
+
+grid.arrange(p7,p8,p9,p10,p11,p12, nrow = 2, ncol = 3)
 ```
 
 ```{r Step 3}
