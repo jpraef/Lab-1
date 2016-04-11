@@ -1,0 +1,36 @@
+---
+title: "Lab8"
+output: html_document
+---
+Joseph Crockett  
+ES 207: Environmental Data Analysis  
+April 1st, 2016  
+Homework Assignment 7: Time & Space  
+
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(fig.width = 12, fig.height = 8, warning = FALSE, message = FALSE)
+
+#check for needed packages, install if needed, then adds to environment
+ndpkg <- function(p){
+ if(!is.element(p,installed.packages()[,1]))
+   {install.packages(p, dep = T)}
+  require(p,character.only = T)
+}
+sapply(c("foreign", "ggplot2", "reshape", "raster", "rgdal","dplyr","gridExtra"), ndpkg)
+
+#EDA function
+CV1 <- function(x){
+  print((sd(x)/mean(x))*100)
+}
+
+```
+
+
+Objective Statement: 
+Methods:  
+Data:  
+Code: 
+Results:  
+Discussion:  
+Limitations:  

@@ -219,14 +219,14 @@ ggplot(water_dat_flood, aes(x = water_year, y = flood, fill = ab)) + geom_bar(st
 
 ```
 
-Results:
+Results:  
 As expected, streamflow exhibited yearly auto-correlation, in which a one year lag had positive autocorrelation and a 6 month lag had negative correlation.  Lags were similar 1 year, 2 year, and expected, 3 years away.  When seasonal trends were removed, the results reveal multi-year wet/dry cycles.  Beginning in approximately the 1990s, the wet/dry pattern changes relative to the previous century to longer periods of low stream flow with peaks of intense flooding.  Wet/dry cycles in the previous years followed a ragged sine curve with fewer extremes.  
 36% of water years had more than 100 days in which discharge equaled or exceeded 800 cfs. Visual inspection of flood years reveals that flood years cluster more starting in the 1970s compared to previous years.  Since 1975, ~ 3 clusters of multiple flood years occurred (2 or greater consecutive years of 100 days greater than 800 cfs).  These number of days within flood years also seems to be increasing.  
 Monthly decomposition of flood events show that discharge occurs primarily in the 4 – 6th months of the water year (January through March).  1997, the year with the largest daily average discharge, had its largest total, mean, and max discharge in January.  
-Discussion:
+Discussion:  
 The final analysis shows that the threshold of years needed to justify the creation of a floodplain has not been met.  To meet the 50% threshold, we would need to reduce the number of days a year to 60 or the discharge to 550 cfs.  
 The number of flood days within a flood year seem to be increasing, as does the time between wet years.  This could be due to extreme precipitation events within a longer drought period.  Interestingly, the wettest year, 1983 occurred just 6 years after the driest year.  Finally, extreme weather events are captured.  The 97 -98 El Nino is clearly noticeable as a massive flood spike.  In the monthly graphs, we see that 1997 also laid claim to the largest daily discharge, in January of that year.  The 2012 – 2015 drought appears as a period of low discharge rates, comparable to the 1930s.
 Future analysis may include trend analysis of high discharge days: whether the trend of isolated extreme flood years is in fact increasing may change criteria for floodplain construction.
 
-Limitations:
+Limitations:  
 There is an unanswered question of whether our chosen data period accurately depicts future flooding.  Earlier droughts, such as the 1930s Dustbowl, drew our final statistic down, but this might not be representable of current climate conditions.  A more in-depth analysis would include discharge forecasts and removal of outliers.  
