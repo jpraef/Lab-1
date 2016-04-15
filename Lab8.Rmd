@@ -1,6 +1,6 @@
 ---
 title: "Lab8"
-output: html_document
+output: word_document
 ---
 Joseph Crockett  
 ES 207: Environmental Data Analysis  
@@ -17,19 +17,25 @@ ndpkg <- function(p){
    {install.packages(p, dep = T)}
   require(p,character.only = T)
 }
-sapply(c("akima", "ggplot2", "reshape2", "raster","gridExtra", "maptools", "lattice", "RColorBrewer"), ndpkg)
+sapply(c("akima", "ggplot2", "reshape2", "corrplot", "gridExtra", "maptools", "lattice", "RColorBrewer"), ndpkg)
 
 #EDA function
 CV1 <- function(x){
   print((sd(x)/mean(x))*100)
 }
 
-
+reorder_size <- function(x) {
+  factor(x, levels = names(sort(table(x))))
+}
 ```
 
 
 Objective Statement: 
+In a previous analysis, I determined the number of flood events on the Consumnes river over the last hundred years (1907~2015) in order to determine whether localized aquifers would benefit from purposeful flooding of the floodplain.  A related concern is deadzones on the floodplain would arise from decreases in respiration, negatively impacting fish growth.  
+
 Methods:  
+
+A spatial dataset of the dead zone in the Triangle Floodplain in the Cosumnes River Preserve was 
 Data:  
 Code:
 ```{r Step 1}
@@ -41,36 +47,28 @@ unique(pt_shp$DateTime_)
 
 #New dataframes for each date
 pt_shp_21605 <- subset(pt_shp, DateTime_ == "2005-02-16")
-#pt_shp_22805 <- subset(pt_shp, DateTime_ == "2005-02-28")
-#pt_shp_22305 <- subset(pt_shp, DateTime_ == "2005-02-23")
-#pt_shp_21805 <- subset(pt_shp, DateTime_ == "2005-02-18")
 pt_shp_21705 <- subset(pt_shp, DateTime_ == "2005-02-17")
 
+#The values of X and Y are in UTM projection terms. However, for a final report, I would think that stakeholders would better grasp longitude and latitude values, unless they were previously familiar with UTM.
 
-#Interpolating points into raster for each date.  x = long, y = lat, z = Chlorophyl
-r_21605 <- interp(x = pt_shp_21605$Longitude, y = pt_shp_21605$Latitude, z = pt_shp_21605$Chlorophyl, duplicate = "mean")
-r_21605_m <- data.frame(Chlorophyll = melt(r_21605$z)$value, x = rep(r_21605$x, each = 40), y = rep(r_21605$y, 40)) #melting into longform so that I can use ggplot
+#Interpolating points into raster for each date.  x = long, y = lat, z = elevation, just to see
+r_21605 <- interp(x = pt_shp_21605$Longitude, y = pt_shp_21605$Latitude, z = pt_shp_21605$Elevati, duplicate = "mean")
 
-r_21705 <- interp(x = pt_shp_21705$Longitude, y = pt_shp_21705$Latitude, z = pt_shp_21705$Chlorophyl, duplicate = "mean")
-r_21705_m <- data.frame(Chlorophyll = melt(r_21705$z)$value, x = rep(r_21705$x, each = 40), y = rep(r_21705$y, 40))
+r_21605_m <- data.frame(Elevation = melt(r_21605$z)$value, x = rep(r_21605$x, each = 40), y = rep(r_21605$y, 40)) #melting into longform so that I can use ggplot
 
-#r_21805 <- interp(x = pt_shp_21805$Longitude, y = pt_shp_21805$Latitude, z = pt_shp_21805$Chlorophyl, duplicate = "mean")
-#r_21805_m <- data.frame(Chlorophyll = melt(r_21805$z)$value, x = rep(r_21805$x, each = 40), y = rep(r_21805$y, 40))
+r_21705 <- interp(x = pt_shp_21705$Longitude, y = pt_shp_21705$Latitude, z = pt_shp_21705$Elevati, duplicate = "mean")
+image(r_21705)
+r_21705_m <- data.frame(Elevation = melt(r_21705$z)$value, x = rep(r_21705$x, each = 40), y = rep(r_21705$y, 40))
 
-#r_22305 <- interp(x = pt_shp_22305$Longitude, y = pt_shp_22305$Latitude, z = pt_shp_22305$Chlorophyl, duplicate = "mean")
-#r_22305_m <- data.frame(Chlorophyll = melt(r_22305$z)$value, x = rep(r_22305$x, each = 40), y = rep(r_22305$y, 40))
+#Test plots of elevation
+ggplot(r_21605_m, aes(x = x, y = y, z = Elevation, fill = Elevation)) + geom_raster() + stat_contour(color = "grey50", alpha = 1/5) + scale_fill_distiller(palette="BrBG", direction = 1, na.value="white")+ theme_minimal() 
 
-#r_22805 <- interp(x = pt_shp_22805$Longitude, y = pt_shp_22805$Latitude, z = pt_shp_22805$Chlorophyl, duplicate = "mean")
-#r_22805_m <- data.frame(Chlorophyll = melt(r_22805$z)$value, x = rep(r_22805$x, each = 40), y = rep(r_22805$y, 40))
+ggplot(r_21705_m, aes(x = x, y = y, z = Elevation, fill = Elevation)) + geom_raster() + stat_contour(color = "grey50", alpha = 1/5) + scale_fill_distiller(palette="BrBG", direction = 1, na.value="white")+ theme_minimal() 
 
-#r_205 <- rbind(r_21605_m, r_21705_m, r_21805_m, r_22305_m, r_22805_m) #stack the five dates together
-#r_205$datetime <- rep(c("2/16/05", "2/17/05", "2/18/05", "2/23/05", "2/28/05"), each = 1600) #add a date-time marker so that a facet_grid can be used on the graph
+#the plot seems to be upside down.  
+r_21605_m <- data.frame(Elevation = rev(melt(r_21605$z)$value), x = rep(r_21605$x, each = 40), y = rep(r_21605$y, 40)) #reversing the order of the z term did it.
 
-
-ggplot(r_21605_m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) + geom_raster() + stat_contour(color = "grey50", alpha = 1/5) + scale_fill_distiller(palette="Spectral", direction = 1, na.value="white")+ theme_minimal() 
-
-ggplot(r_21705_m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) + geom_raster() + stat_contour(color = "grey50", alpha = 1/5) + scale_fill_distiller(palette="Spectral", direction = 1, na.value="white")+ theme_minimal() 
-
+ggplot(r_21605_m, aes(x = x, y = y, z = Elevation, fill = Elevation)) + geom_raster() + stat_contour(color = "grey50", alpha = 1/5) + scale_fill_distiller(palette="BrBG", direction = 1, na.value="white")+ theme_minimal()
 ```
 
 ```{r Step 2}
@@ -78,24 +76,64 @@ ggplot(r_21705_m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) + geom
 #For 2/16/05 and 2/17/05, rasters of temp, chloro, and DO:
 
 ch_16 <- interp(x = pt_shp_21605$Longitude, y = pt_shp_21605$Latitude, z = pt_shp_21605$Chlorophyl, duplicate = "mean")
-ch_16m <- data.frame(Chlorophyll = melt(ch_16$z)$value, x = rep(ch_16$x, each = 40), y = rep(ch_16$y, 40))
+image(ch_16)
+ch_16m <- melt(ch_16$z)
+ch_16m$Var2 = rep(ch_16$y, each = 40)
+ch_16m$Var1 = rep(ch_16$x, 40)
+colnames(ch_16m) <- c("x", "y", "Chlorophyll")
 t_16 <-interp(x = pt_shp_21605$Longitude, y = pt_shp_21605$Latitude, z = pt_shp_21605$Temp, duplicate = "mean")
-t_16m <- data.frame(Temperature = melt(t_16$z)$value, x = rep(t_16$x, each = 40), y = rep(t_16$y, 40))
+t_16m <- melt(t_16$z) 
+t_16m$Var2 = rep(t_16$y, each = 40)
+t_16m$Var1 = rep(t_16$x, 40)
+colnames(t_16m) <- c("x", "y", "Temperature")
 do_16 <- interp(x = pt_shp_21605$Longitude, y = pt_shp_21605$Latitude, z = pt_shp_21605$DO__, duplicate = "mean")
-do_16m <- data.frame(Dissolved_O2 = melt(do_16$z)$value, x = rep(do_16$x, each = 40), y = rep(do_16$y, 40))
+do_16m <- melt(do_16$z) 
+do_16m$Var2 = rep(do_16$y, each = 40)
+do_16m$Var1 = rep(do_16$x, 40)
+colnames(do_16m) <- c("x", "y", "Dissolved_O2")
 
 ch_17 <- interp(x = pt_shp_21705$Longitude, y = pt_shp_21705$Latitude, z = pt_shp_21705$Chlorophyl, duplicate = "mean")
-ch_17m <- data.frame(Chlorophyll = melt(ch_17$z)$value, x = rep(ch_17$x, each = 40), y = rep(ch_17$y, 40))
+ch_17m <- melt(ch_17$z) 
+ch_17m$Var2 = rep(ch_17$y, each = 40)
+ch_17m$Var1 = rep(ch_17$x, 40)
+colnames(ch_17m) <- c("x", "y", "Chlorophyll")
 t_17 <-interp(x = pt_shp_21705$Longitude, y = pt_shp_21705$Latitude, z = pt_shp_21705$Temp, duplicate = "mean")
-t_17m <- data.frame(Temperature = melt(t_17$z)$value, x = rep(t_17$x, each = 40), y = rep(t_17$y, 40))
+t_17m <- melt(t_17$z)
+t_17m$Var2 = rep(t_17$y, each = 40)
+t_17m$Var1 = rep(t_17$x, 40)
+colnames(t_17m) <- c("x", "y", "Temperature")
 do_17 <- interp(x = pt_shp_21705$Longitude, y = pt_shp_21705$Latitude, z = pt_shp_21705$DO__, duplicate = "mean")
-do_17m <- data.frame(Dissolved_O2 = melt(do_17$z)$value, x = rep(do_17$x, each = 40), y = rep(do_17$y, 40))
+do_17m <- melt(do_17$z) 
+do_17m$Var2 = rep(do_17$y, each = 40)
+do_17m$Var1 = rep(do_17$x, 40)
+colnames(do_17m) <- c("x", "y", "Dissolved_O2")
 
 
 # image/contour plots, 2/16/07
-p1 <- ggplot(ch_16m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Spectral", direction = 1, na.value="white")+ theme_minimal() + theme(legend.title = element_text(size = 10), legend.justification=c(1,0), legend.position=c(1,0)) 
-p2 <- ggplot(t_16m, aes(x = x, y = y, z = Temperature, fill = Temperature)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Oranges", direction = 1, na.value="white")+ theme_minimal() + theme(legend.title = element_text(size = 10), legend.justification=c(1,0), legend.position=c(1,0)) 
-p3 <- ggplot(do_16m, aes(x = x, y = y, z = Dissolved_O2, fill = Dissolved_O2)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="BuPu", direction = 1, na.value="white")+ theme_minimal() + theme(legend.title = element_text(size = 10), legend.justification=c(1,0), legend.position=c(1,0)) 
+p1 <- ggplot(ch_16m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) +
+  geom_raster() +
+  stat_contour(color = "black", alpha = 1/4) +
+  scale_fill_distiller(name = "Chlorophyll (μg L−1)", palette="Spectral", direction = 1, na.value="white")+
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), legend.justification=c(0,1), legend.position=c(0,1))+
+  labs(x = "Longitude", y = "Latitude")
+#Chlorophyl is in terms of micrograms / liter (ug L^-1)
+
+p2 <- ggplot(t_16m, aes(x = y, y = z, z = Temperature, fill = Temperature)) +
+  geom_raster() +
+  stat_contour(color = "black", alpha = 1/4) +
+  scale_fill_distiller(name = "Temperature (°C)", palette="Oranges", direction = 1, na.value="white")+
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), legend.justification=c(0,1), legend.position=c(0,1))+
+  labs(x = "Longitude", y = "Latitude")#Temperature (c)
+
+p3 <- ggplot(do_16m, aes(x = x, y = y, z = Dissolved_O2, fill = Dissolved_O2)) +
+  geom_raster() +
+  stat_contour(color = "black", alpha = 1/4) +
+  scale_fill_distiller(name = "Dissolved O2 (%)", palette="BuPu", direction = 1, na.value="white")+
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), legend.justification=c(0,1), legend.position=c(0,1))+
+  labs(x = "Longitude", y = "Latitude")#DO (%)
 
 #getting the colors from ggplot to use in the perspective plots
 getPalette1 = colorRampPalette(brewer.pal(9, "Spectral"))
@@ -104,36 +142,64 @@ getPalette3 = colorRampPalette(brewer.pal(9, "BuPu"))
 
 
 #perspective plots
-p4 <- wireframe(Chlorophyll ~ x*y, ch_16m, drape = T, aspect = c(61/87, 0.4), col.regions = (getPalette1)(100))
-p5 <- wireframe(Temperature ~ x*y, t_16m, drape = T, aspect = c(61/87, 0.4), col.regions =(getPalette2)(100))
-p6 <- wireframe(Dissolved_O2 ~ x*y, do_16m,drape = T, aspect = c(61/87, 0.4), col.regions =(getPalette3)(100))
+p4 <- wireframe(Chlorophyll ~ x*y, ch_16m, drape = T, aspect = c(61/87, 0.4), col.regions = (getPalette1)(100), col = F, xlab = "Longitude", ylab = " Latitude", zlab = list("Dissolved O2", rot = 90))
+p5 <- wireframe(Temperature ~ x*y, t_16m, drape = T, aspect = c(61/87, 0.4), col.regions =(getPalette2)(100), col = F, xlab = "Longitude", ylab = " Latitude",zlab = list("Dissolved O2", rot = 90))
+p6 <- wireframe(Dissolved_O2 ~ x*y, do_16m,drape = T, aspect = c(61/87, 0.4), col.regions =(getPalette3)(100), col = F, xlab = "Longitude", ylab = " Latitude", zlab = list("Dissolved O2", rot = 90))
 
-
-grid.arrange(p1,p2,p3,p4,p5,p6, nrow = 2, ncol = 3)
-
-
+#2/16/05 plots.  contour/image on top row, persp on bottom
+g1 <- grid.arrange(p1,p2,p3,p4,p5,p6, nrow = 2, ncol = 3, top = "2/16/07 Chlorophyl (μg L−1), Temperature (C), and Dissoved Oxygen (%) in the Triangle Floodplain Deadzone of the Consumnes River Preserve")
 
 
 # image/contour plots, 2/17/07
-p7 <- ggplot(ch_17m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Spectral", direction = 1, na.value="white")+ theme_minimal() + theme(legend.title = element_text(size = 10), legend.justification=c(1,0), legend.position=c(1,0)) 
-p8 <- ggplot(t_17m, aes(x = x, y = y, z = Temperature, fill = Temperature)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="Oranges", direction = 1, na.value="white")+ theme_minimal() + theme(legend.title = element_text(size = 10), legend.justification=c(1,0), legend.position=c(1,0)) 
-p9 <- ggplot(do_17m, aes(x = x, y = y, z = Dissolved_O2, fill = Dissolved_O2)) + geom_raster() + stat_contour(color = "black", alpha = 1/4) + scale_fill_distiller(palette="BuPu", direction = 1, na.value="white")+ theme_minimal() + theme(legend.title = element_text(size = 10), legend.justification=c(1,0), legend.position=c(1,0)) 
+p7 <- ggplot(ch_17m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) +
+  geom_raster() +
+  stat_contour(color = "black", alpha = 1/4) +
+  scale_fill_distiller(name = "Chlorophyll (μg L−1)", palette="Spectral", direction = 1, na.value="white")+
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), legend.justification=c(0,1), legend.position=c(0,1))+
+  labs(x = "Longitude", y = "Latitude")
+
+
+p8 <- ggplot(t_17m, aes(x = x, y = y, z = Temperature, fill = Temperature)) +
+  geom_raster() +
+  stat_contour(color = "black", alpha = 1/4) +
+  scale_fill_distiller(name = "Temperature (°C)", palette="Oranges", direction = 1, na.value="white")+
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), legend.justification=c(0,1), legend.position=c(0,1))+
+  labs(x = "Longitude", y = "Latitude")
+
+
+p9 <- ggplot(do_17m, aes(x = x, y = y, z = Dissolved_O2, fill = Dissolved_O2)) +
+  geom_raster() +
+  stat_contour(color = "black", alpha = 1/4) +
+  scale_fill_distiller(name = "Dissolved O2 (%)", palette="BuPu", direction = 1, na.value="white")+
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), legend.justification=c(0,1), legend.position=c(0,1))+
+  labs(x = "Longitude", y = "Latitude")
+
 
 
 
 #perspective plots
-p10 <- wireframe(Chlorophyll ~ x*y, ch_17m, drape = T, aspect = c(61/87, 0.4), col.regions = (getPalette1)(100))
-p11 <- wireframe(Temperature ~ x*y, t_17m, drape = T, aspect = c(61/87, 0.4), col.regions = (getPalette2)(100))
-p12 <- wireframe(Dissolved_O2 ~ x*y, do_17m,drape = T, aspect = c(61/87, 0.4), col.regions = (getPalette3)(100))
+p10 <- wireframe(Chlorophyll ~ x*y, ch_17m, drape = T, aspect = c(61/87, 0.4), col.regions = (getPalette1)(100), col = F, xlab = "Longitude", ylab = " Latitude", zlab = list("Chlorophyll (μg L−1)", rot = 90))
+p11 <- wireframe(Temperature ~ x*y, t_17m, drape = T, aspect = c(61/87, 0.4), col.regions = (getPalette2)(100), col = F, xlab = "Longitude", ylab = " Latitude", zlab = list("Temperature (°C)", rot = 90))
+p12 <- wireframe(Dissolved_O2 ~ x*y, do_17m,drape = T, aspect = c(61/87, 0.4), col.regions = (getPalette3)(100), col = F, xlab = "Longitude", ylab = " Latitude", zlab = list("Dissolved O2 (%)", rot = 90))
 
 
-grid.arrange(p7,p8,p9,p10,p11,p12, nrow = 2, ncol = 3)
+g2 <- grid.arrange(p7,p8,p9,p10,p11,p12, nrow = 2, ncol = 3, top = "2/17/07 Chlorophyl (μg L−1), Temperature (C), and Dissoved Oxygen (%) in the Triangle Floodplain Deadzone of the Consumnes River Preserve")
 ```
 
 ```{r Step 3}
-
+#see shiny app attached
 ```
 
 Results:  
+Between February 16th and 17th, 2007, the elevation of the floodplain changes little, with the exception of a deepened channel along the southwest edge.  Ahearn et al. 2006 noted that the floodplain was converted from agricultural land, with two ponds added for habitat.  The y shaped shallow area observed in the elevation plot corresponds to the larger of the two ponds, and the smaller shallow area in the northeast corner is the other. The floodplain varies approximately 1.5 m between the lowest point (the southwest corner of the y pond) and the highest point (the northwest corner of the levee).  On 2/17/07, the deepest point of the y-pond extended north and east along the western levee and the deep point dropped approximately .1 m in elevation. 
+
+Chlorophyll is consistent across the 2/16 y pond (~10 μg L−1), with the exception of a spike of 15 μg L−1 on the east side of the pond.  The spike in chlorophyll becomes a sink on 2/17 as areas around the y pond are innundated with chlorophyll laden flooding.
+
 Discussion:  
-Limitations:  
+Limitations:
+
+Citations:
+Ahearn, Dylan S., et al. "Priming the productivity pump: flood pulse driven trends in suspended algal biomass distribution across a restored floodplain." Freshwater Biology 51.8 (2006): 1417-1433.
