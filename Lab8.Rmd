@@ -4,8 +4,8 @@ output: word_document
 ---
 Joseph Crockett  
 ES 207: Environmental Data Analysis  
-April 1st, 2016  
-Homework Assignment 7: Time & Space  
+April 11st, 2016  
+Homework Assignment 8: Time & Space  
 
 
 ```{r global_options, include = FALSE}
@@ -35,8 +35,11 @@ In a previous analysis, I determined the number of flood events on the Consumnes
 
 Methods:  
 
-A spatial dataset of the dead zone in the Triangle Floodplain in the Cosumnes River Preserve was 
+A spatial dataset of the dead zone in the Triangle Floodplain in the Cosumnes River Preserve was obtained.  Following exploratory data analysis, plots of four variables (elevation, chlorophyll concentration, dissolved oxygen, and temperature) from two dates (2/16/07 and 2/17/07) were created.  Finally, a shiny app with five dates and five variables was built for direct user comparision.
+
 Data:  
+
+The data are from a triangular shaped floodplain on the Consumnes River Preserve obtained on dates 2/16, 2/17, 2/18, 2/23, and 2/28 of 2007.  The floodplain is constrained on the western diagonal edge by an unbreached levee, while the east and south levees have been breached in two spots each.  The plain was previously agricultural land dedicated to tomato farming.  A large y shaped pond and a smaller pond were constructed in the center for habitat heterogeneity (Ahearn et al. 2006).
 Code:
 ```{r Step 1}
 pt_shp <- readShapePoints("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/Lab-1/Data/ahearn_allobs/allobs.shp")
@@ -196,13 +199,15 @@ g2 <- grid.arrange(p7,p8,p9,p10,p11,p12, nrow = 2, ncol = 3, top = "2/17/07 Chlo
 #see shiny app attached
 ```
 
-Results:  
-Between February 16th and 17th, 2007, the elevation of the floodplain changes little, with the exception of a deepened channel along the southwest edge.  Ahearn et al. 2006 noted that the floodplain was converted from agricultural land, with two ponds added for habitat.  The y shaped shallow area observed in the elevation plot corresponds to the larger of the two ponds, and the smaller shallow area in the northeast corner is the other. The floodplain varies approximately 1.5 m between the lowest point (the southwest corner of the y pond) and the highest point (the northwest corner of the levee).  On 2/17/07, the deepest point of the y-pond extended north and east along the western levee and the deep point dropped approximately .1 m in elevation. 
+Results:
+Between February 16th and 17th, 2007, the elevation of the floodplain changes little, with the exception of a deepened channel along the northwest edge. Ahearn et al. 2006 noted that the floodplain was converted from agricultural land, with two ponds added for habitat. The y shaped shallow area observed in the elevation plot corresponds to the larger of the two ponds, and the smaller shallow area in the southwest corner is the other. The floodplain varies approximately 1.5 m between the lowest point (the northeast corner of the y pond) and the highest point (the northeast corner of the levee). On 2/17/07, the deepest point of the y-pond extended north and east along the western levee and the deep point dropped approximately .1 m in elevation.
+Chlorophyll is consistent across the 2/16 y pond (~10 μg L−1), with the exception of a spike of 15 μg L−1 on the south side of the pond. The spike in chlorophyll becomes a sink on 2/17 as areas around the y pond are innundated with chlorophyll-laden flooding. Low elevations were predominantly cooler than adjacent areas on 2/16, and temperatures drastically dropped on 2/17.  With the exception of points of high dissolved oxygen content at points close to high chlorophyll production on 2/16, DO had low variation at 90~100 % saturation.  High DO were found at points of high temperature and/or chlorophyll.  2/17 saw DO levels increase in areas of high chlorophyll concentration, but also in areas of high temperatures along the eastern side of the floodplains. 
 
-Chlorophyll is consistent across the 2/16 y pond (~10 μg L−1), with the exception of a spike of 15 μg L−1 on the east side of the pond.  The spike in chlorophyll becomes a sink on 2/17 as areas around the y pond are innundated with chlorophyll-laden flooding.
 
-Discussion:  
+Discussion:
+Chlorophyll concentrations appear to be heavily influenced by an influx of water onto the floodplain on 2/17.  The southern edge, where two levee breaches allow the exit of water, seem to concentrate the chlorophyll, but it difficult to say with certainty what the connection is.  The attached shiny app allows comparison of five values over five dates.  The final two variables included in the app are total dissolved solids and turbidity.  Turbidity shows an interesting story of the inundation of the floodplain: on day 1, 2/16, a point of high turbidity is occurring on the southern edge, at a similar point as a concentration of chlorophyll, dissolved O2, and temperature.  The beginnings of a flood are evident in the northeastern corner.  The following days see great turbulence from the northeast as waters rush into the system and flow through two points in the south.  Reduced chlorophyll follows this path, but within two days of the initial flow, heavy concentrations of chlorophyll occur in corners of the y pond, though they do not last long.
+The date ranges may not be enough to make predictions regarding deadzones, but it appears that the dissolved oxygen of the floodplain increased in relation to increased turbidity.  Post flood, DO levels dropped to pre flood concentrations.  It is my recommendation that floods are a necessary part of this system if our intent is to reduce persistent deadzones.
+
 Limitations:
-
-Citations:
-Ahearn, Dylan S., et al. "Priming the productivity pump: flood pulse driven trends in suspended algal biomass distribution across a restored floodplain." Freshwater Biology 51.8 (2006): 1417-1433.
+Our time scale is short, reducing the number of data points that could be used to relate DO to other variables. 
+Citations: Ahearn, Dylan S., et al. "Priming the productivity pump: flood pulse driven trends in suspended algal biomass distribution across a restored floodplain." Freshwater Biology 51.8 (2006): 1417-1433.
