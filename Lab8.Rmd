@@ -66,7 +66,10 @@ ggplot(r_21605_m, aes(x = x, y = y, z = Elevation, fill = Elevation)) + geom_ras
 ggplot(r_21705_m, aes(x = x, y = y, z = Elevation, fill = Elevation)) + geom_raster() + stat_contour(color = "grey50", alpha = 1/5) + scale_fill_distiller(palette="BrBG", direction = 1, na.value="white")+ theme_minimal() 
 
 #the plot seems to be upside down.  
-r_21605_m <- data.frame(Elevation = rev(melt(r_21605$z)$value), x = rep(r_21605$x, each = 40), y = rep(r_21605$y, 40)) #reversing the order of the z term did it.
+r_21605_m <- melt(r_21605$z) 
+r_21605_m$Var2 = rep(r_21605$y, each = 40)
+r_21605_m$Var1 = rep(r_21605$x, 40)
+colnames(r_21605_m) <- c("x", "y", "Elevation")
 
 ggplot(r_21605_m, aes(x = x, y = y, z = Elevation, fill = Elevation)) + geom_raster() + stat_contour(color = "grey50", alpha = 1/5) + scale_fill_distiller(palette="BrBG", direction = 1, na.value="white")+ theme_minimal()
 ```
@@ -119,7 +122,7 @@ p1 <- ggplot(ch_16m, aes(x = x, y = y, z = Chlorophyll, fill = Chlorophyll)) +
   labs(x = "Longitude", y = "Latitude")
 #Chlorophyl is in terms of micrograms / liter (ug L^-1)
 
-p2 <- ggplot(t_16m, aes(x = y, y = z, z = Temperature, fill = Temperature)) +
+p2 <- ggplot(t_16m, aes(x = x, y = y, z = Temperature, fill = Temperature)) +
   geom_raster() +
   stat_contour(color = "black", alpha = 1/4) +
   scale_fill_distiller(name = "Temperature (°C)", palette="Oranges", direction = 1, na.value="white")+
@@ -196,7 +199,7 @@ g2 <- grid.arrange(p7,p8,p9,p10,p11,p12, nrow = 2, ncol = 3, top = "2/17/07 Chlo
 Results:  
 Between February 16th and 17th, 2007, the elevation of the floodplain changes little, with the exception of a deepened channel along the southwest edge.  Ahearn et al. 2006 noted that the floodplain was converted from agricultural land, with two ponds added for habitat.  The y shaped shallow area observed in the elevation plot corresponds to the larger of the two ponds, and the smaller shallow area in the northeast corner is the other. The floodplain varies approximately 1.5 m between the lowest point (the southwest corner of the y pond) and the highest point (the northwest corner of the levee).  On 2/17/07, the deepest point of the y-pond extended north and east along the western levee and the deep point dropped approximately .1 m in elevation. 
 
-Chlorophyll is consistent across the 2/16 y pond (~10 μg L−1), with the exception of a spike of 15 μg L−1 on the east side of the pond.  The spike in chlorophyll becomes a sink on 2/17 as areas around the y pond are innundated with chlorophyll laden flooding.
+Chlorophyll is consistent across the 2/16 y pond (~10 μg L−1), with the exception of a spike of 15 μg L−1 on the east side of the pond.  The spike in chlorophyll becomes a sink on 2/17 as areas around the y pond are innundated with chlorophyll-laden flooding.
 
 Discussion:  
 Limitations:

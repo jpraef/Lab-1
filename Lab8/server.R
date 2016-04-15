@@ -45,7 +45,14 @@ pt_shp <- readShapePoints("~/Desktop/General/Spring 2016/ES 207/Labs/Projects/La
                       "Turbidity" = "Turbidity (NTU)",
                       "Total Dissolved Solids" = "Total Dissolved Solids (mg L−1)")
                       
-       pt.fill_df<- data.frame(z = rev(melt(pt.filled$z)$value), x = rep(pt.filled$x, each = 40), y = rep(pt.filled$y, 40))
+      
+       pt.fill_df <- melt(pt.filled$z)
+       pt.fill_df$Var2 = rep(pt.filled$y, each = 40)
+       pt.fill_df$Var1 = rep(pt.filled$x, 40)
+       colnames(pt.fill_df) <- c("x", "y", "z")
+       
+       
+       
        ggplot(pt.fill_df, aes(x = x, y = y, z = z, fill = z)) +
          geom_raster() +
          stat_contour(color = "black", alpha = 1/4) +
